@@ -24,13 +24,17 @@
 `prompt_modifier`, `complexity` (`low|medium|high`), `extra_minutes`, `active`, `sort_order`
 
 ### ai_jobs
-`id`, `salon_id`, `session_id`, `status` (`QUEUED|RUNNING|SUCCEEDED|FAILED`),  
-`provider`, `model`, `external_prediction_id`, `reported_model_version`,  
-`prompt_version`, `input_parameters_json` (sin signed URLs ni PII),  
-`estimated_cost_usd`, `error_code`,  
-`source_image_path`, `reference_image_path`, `result_image_path`,  
-`consent_policy_version`, `ip_hash`,  
+`id`, `salon_id`, `session_id`, `status` (`QUEUED|RUNNING|SUCCEEDED|FAILED`),
+`provider`, `model`, `model_owner`, `model_name`, `requested_version`, `asset_version`,
+`external_prediction_id`, `reported_model_version`,
+`prompt_version`, `input_parameters_json` (sin signed URLs ni PII),
+`estimated_cost_usd`, `latency_ms`, `error_code`,
+`source_image_path`, `reference_image_path`, `result_image_path`, `pending_result_url` (server-only, Phase 3B→3C),
+`consent_policy_version`, `ip_hash`,
 `created_at`, `updated_at`, `completed_at`
+
+### webhook_deliveries
+`id`, `webhook_id` (unique — Replicate delivery id), `external_prediction_id`, `event_status`, `received_at`
 
 ### booking_requests
 `id`, `salon_id`, `staff_id`, `service_id`, `hairstyle_id` (nullable),  

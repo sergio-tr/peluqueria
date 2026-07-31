@@ -84,6 +84,9 @@ describe("ai job insert row", () => {
       status: "QUEUED",
       provider: "replicate-qwen",
       model: "qwen/qwen-image-edit-plus",
+      modelOwner: "qwen",
+      modelName: "qwen-image-edit-plus",
+      assetVersion: "1.0.0",
       promptVersion: "v1",
       sourceImagePath: "salon/sess/photo.jpg",
       referenceImagePath: "hairstyles/low-fade/ai-reference.png",
@@ -96,6 +99,8 @@ describe("ai job insert row", () => {
       session_id: "sess-1",
       status: "QUEUED",
       provider: "replicate-qwen",
+      model_owner: "qwen",
+      model_name: "qwen-image-edit-plus",
       source_image_path: "salon/sess/photo.jpg",
       reference_image_path: "hairstyles/low-fade/ai-reference.png",
     });
