@@ -3,12 +3,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { assertTransition } from "@/domain/booking-state";
 import { addHold, endsFromStart } from "@/domain/booking-holds";
 import { AppError } from "@/domain/errors";
-import { appendBookingEvent } from "@/infrastructure/persistence/repositories/booking-events";
-import {
-  getBookingById,
-  hasOverlappingBooking,
-  updateBooking,
-} from "@/infrastructure/persistence/repositories/bookings";
+import { transitionBookingWithEvent } from "@/infrastructure/persistence/repositories/booking-transactions";
+import { getBookingById } from "@/infrastructure/persistence/repositories/bookings";
 import {
   hashConfirmationToken,
   insertConfirmationToken,
@@ -38,18 +34,15 @@ export async function applyBarberTransition(
 
   if (input.action === "reject") {
     assertTransition(booking.status, "REJECTED", "barber");
-    const updated = await updateBooking(client, SALON_ID, booking.id, {
-      status: "REJECTED",
+    const updated = await transitionBookingWithEvent(client, {
+      salonId: SALON_ID,
+      bookingId: booking.id,
+      expectedFromStatus: booking.status,
+      toStatus: "REJECTED",
+      actorType: "barber",
       barberComment: input.comment,
     });
     await invalidateTokensForBooking(client, booking.id);
-    await appendBookingEvent(client, {
-      salonId: SALON_ID,
-      bookingRequestId: booking.id,
-      fromStatus: booking.status,
-      toStatus: "REJECTED",
-      actorType: "barber",
-    });
     return { status: updated.status };
   }
 
@@ -68,16 +61,6 @@ export async function applyBarberTransition(
     : (booking.proposedStartsAt ?? booking.requestedStartsAt);
   const end = endsFromStart(start, duration);
 
-  if (
-    await hasOverlappingBooking(client, booking.staffId, start, end, booking.id)
-  ) {
-    throw new AppError(
-      "SLOT_UNAVAILABLE",
-      "El intervalo propuesto no está libre.",
-      409,
-    );
-  }
-
   await invalidateTokensForBooking(client, booking.id);
 
   const plaintext = randomBytes(32).toString("base64url");
@@ -91,13 +74,18 @@ export async function applyBarberTransition(
     expiresAt: addHold(now, "confirm"),
   });
 
-  const updated = await updateBooking(client, SALON_ID, booking.id, {
-    status: "PENDING_CUSTOMER_CONFIRMATION",
+  const updated = await transitionBookingWithEvent(client, {
+    salonId: SALON_ID,
+    bookingId: booking.id,
+    expectedFromStatus: booking.status,
+    toStatus: "PENDING_CUSTOMER_CONFIRMATION",
+    actorType: "barber",
     proposedStartsAt: start,
     proposedEndsAt: end,
     finalDurationMinutes: duration,
-    barberComment: input.comment,
     holdExpiresAt: addHold(now, "confirm"),
+    barberComment: input.comment,
+    payload: { durationMinutes: duration },
   });
 
   const confirmPath = `/confirm/${plaintext}`;
@@ -109,15 +97,6 @@ export async function applyBarberTransition(
     subject: "Confirma tu cita en Peluquería Nowi",
     bodySummary: `Propuesta lista. Duración ${duration} min.`,
     confirmPath,
-  });
-
-  await appendBookingEvent(client, {
-    salonId: SALON_ID,
-    bookingRequestId: booking.id,
-    fromStatus: booking.status,
-    toStatus: "PENDING_CUSTOMER_CONFIRMATION",
-    actorType: "barber",
-    payload: { durationMinutes: duration },
   });
 
   return {

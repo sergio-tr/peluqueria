@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { canTransition, assertTransition } from "./booking-state";
+import { canTransition, assertTransition, BLOCKING_STATUSES } from "./booking-state";
 
 describe("booking-state", () => {
+  it("defines D-07 blocking statuses", () => {
+    expect(BLOCKING_STATUSES).toEqual([
+      "PENDING_BARBER_REVIEW",
+      "PENDING_CUSTOMER_CONFIRMATION",
+      "CONFIRMED",
+    ]);
+  });
+
   it("allows barber propose", () => {
     expect(
       canTransition(
