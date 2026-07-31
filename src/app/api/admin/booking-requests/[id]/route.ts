@@ -25,7 +25,7 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function GET(request: Request, { params }: Params) {
   try {
-    requireAdmin(request);
+    await requireAdmin(request);
     const { supabase } = requireSupabase();
     const config = loadConfig();
     const { id } = await params;
@@ -96,7 +96,7 @@ export async function GET(request: Request, { params }: Params) {
 
 export async function POST(request: Request, { params }: Params) {
   try {
-    requireAdmin(request);
+    await requireAdmin(request);
     const { supabase } = requireSupabase();
     const { id } = await params;
 
