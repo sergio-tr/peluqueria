@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-31  
 **Branch:** `test/production-dod-smoke`  
-**Pull request:** pending  
+**Pull request:** https://github.com/sergio-tr/peluqueria/pull/18 (Draft)  
 **Recovery phase:** 9  
 **Status:** COMPLETE (checklist/docs); DoD **NOT VERIFIED** — no public Replicate smoke executed
 
