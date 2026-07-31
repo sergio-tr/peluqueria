@@ -24,18 +24,27 @@ describe("catalog mappers", () => {
     });
   });
 
-  it("maps hairstyle catalog path to public url", () => {
+  it("maps hairstyle raster paths and asset metadata to API shape", () => {
     const mapped = mapHairstyle({
       id: "h1",
       slug: "low-fade",
       name: "Low fade",
-      catalog_image_path: "hairstyles/catalog/low-fade.svg",
-      ai_reference_image_path: "hairstyles/references/low-fade.svg",
+      catalog_image_path: "hairstyles/low-fade/catalog.png",
+      ai_reference_image_path: "hairstyles/low-fade/ai-reference.png",
+      thumbnail_image_path: "hairstyles/low-fade/thumbnail.png",
+      asset_version: "1.0.0-synthetic-mvp",
+      provenance: "synthetic-generated-mvp",
+      usage_rights: "demo-internal-only",
       complexity: "high",
       extra_minutes: 30,
       prompt_modifier: "x",
       sort_order: 1,
     });
-    expect(mapped.catalogImageUrl).toBe("/hairstyles/catalog/low-fade.svg");
+    expect(mapped.catalogImageUrl).toBe("/hairstyles/low-fade/catalog.png");
+    expect(mapped.thumbnailUrl).toBe("/hairstyles/low-fade/thumbnail.png");
+    expect(mapped.assetVersion).toBe("1.0.0-synthetic-mvp");
+    expect(mapped.provenance).toBe("synthetic-generated-mvp");
+    expect(mapped.usageRights).toBe("demo-internal-only");
+    expect(mapped.catalogImageUrl).not.toMatch(/\.svg$/i);
   });
 });

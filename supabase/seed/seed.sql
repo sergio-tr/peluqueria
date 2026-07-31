@@ -1,13 +1,13 @@
-﻿-- Seed PeluquerÃ­a Nowi (demo)
+﻿-- Seed Peluquería Nowi (demo)
 -- Staff auth_user_id left null; link after creating admin in Supabase Auth.
 
 insert into public.salons (id, name, slug, timezone, address_json, phone, instagram)
 values (
   'a0000000-0000-4000-8000-000000000001',
-  'PeluquerÃ­a Nowi',
+  'Peluquería Nowi',
   'nowi',
   'Europe/Madrid',
-  '{"line1":"Calle de VelÃ¡zquez, 118","postalCode":"28006","city":"Madrid","country":"ES"}'::jsonb,
+  '{"line1":"Calle de Velázquez, 118","postalCode":"28006","city":"Madrid","country":"ES"}'::jsonb,
   '+34 910 245 782',
   '@peluquerianowi'
 );
@@ -16,7 +16,7 @@ insert into public.staff (id, salon_id, display_name, active)
 values (
   'a0000000-0000-4000-8000-000000000010',
   'a0000000-0000-4000-8000-000000000001',
-  'Ãlex Nowi',
+  'Álex Nowi',
   true
 );
 
@@ -28,44 +28,54 @@ insert into public.services (salon_id, slug, name, price_cents, base_minutes, re
   ('a0000000-0000-4000-8000-000000000001', 'arreglo-barba', 'Arreglo de barba', 1600, 30, false, 5);
 
 insert into public.hairstyles (
-  salon_id, slug, name, catalog_image_path, ai_reference_image_path,
+  salon_id, slug, name,
+  catalog_image_path, ai_reference_image_path, thumbnail_image_path,
+  asset_version, provenance, usage_rights,
   source_url, source_author, source_license, license_checked_at,
   prompt_modifier, complexity, extra_minutes, sort_order
 ) values
   ('a0000000-0000-4000-8000-000000000001', 'low-fade', 'Low fade',
-   'hairstyles/catalog/low-fade.svg', 'hairstyles/references/low-fade.svg',
-   null, 'TBD', 'TBD', null,
+   'hairstyles/low-fade/catalog.png', 'hairstyles/low-fade/ai-reference.png', 'hairstyles/low-fade/thumbnail.png',
+   '1.0.0-synthetic-mvp', 'synthetic-generated-mvp', 'demo-internal-only',
+   null, 'synthetic-generator', 'demo-internal-only', '2026-07-31',
    'Clean low fade with gradual blend near the ears.', 'high', 30, 1),
   ('a0000000-0000-4000-8000-000000000001', 'mid-fade', 'Mid fade',
-   'hairstyles/catalog/mid-fade.svg', 'hairstyles/references/mid-fade.svg',
-   null, 'TBD', 'TBD', null,
+   'hairstyles/mid-fade/catalog.png', 'hairstyles/mid-fade/ai-reference.png', 'hairstyles/mid-fade/thumbnail.png',
+   '1.0.0-synthetic-mvp', 'synthetic-generated-mvp', 'demo-internal-only',
+   null, 'synthetic-generator', 'demo-internal-only', '2026-07-31',
    'Mid fade with balanced contrast and clean sides.', 'high', 30, 2),
   ('a0000000-0000-4000-8000-000000000001', 'high-fade', 'High fade',
-   'hairstyles/catalog/high-fade.svg', 'hairstyles/references/high-fade.svg',
-   null, 'TBD', 'TBD', null,
+   'hairstyles/high-fade/catalog.png', 'hairstyles/high-fade/ai-reference.png', 'hairstyles/high-fade/thumbnail.png',
+   '1.0.0-synthetic-mvp', 'synthetic-generated-mvp', 'demo-internal-only',
+   null, 'synthetic-generator', 'demo-internal-only', '2026-07-31',
    'High fade with strong contrast and tight sides.', 'high', 30, 3),
   ('a0000000-0000-4000-8000-000000000001', 'french-crop', 'French crop',
-   'hairstyles/catalog/french-crop.svg', 'hairstyles/references/french-crop.svg',
-   null, 'TBD', 'TBD', null,
+   'hairstyles/french-crop/catalog.png', 'hairstyles/french-crop/ai-reference.png', 'hairstyles/french-crop/thumbnail.png',
+   '1.0.0-synthetic-mvp', 'synthetic-generated-mvp', 'demo-internal-only',
+   null, 'synthetic-generator', 'demo-internal-only', '2026-07-31',
    'French crop with textured fringe and short sides.', 'medium', 15, 4),
   ('a0000000-0000-4000-8000-000000000001', 'buzz-cut', 'Buzz cut',
-   'hairstyles/catalog/buzz-cut.svg', 'hairstyles/references/buzz-cut.svg',
-   null, 'TBD', 'TBD', null,
+   'hairstyles/buzz-cut/catalog.png', 'hairstyles/buzz-cut/ai-reference.png', 'hairstyles/buzz-cut/thumbnail.png',
+   '1.0.0-synthetic-mvp', 'synthetic-generated-mvp', 'demo-internal-only',
+   null, 'synthetic-generator', 'demo-internal-only', '2026-07-31',
    'Even buzz cut, short and uniform length.', 'low', 0, 5),
   ('a0000000-0000-4000-8000-000000000001', 'pompadour', 'Pompadour',
-   'hairstyles/catalog/pompadour.svg', 'hairstyles/references/pompadour.svg',
-   null, 'TBD', 'TBD', null,
+   'hairstyles/pompadour/catalog.png', 'hairstyles/pompadour/ai-reference.png', 'hairstyles/pompadour/thumbnail.png',
+   '1.0.0-synthetic-mvp', 'synthetic-generated-mvp', 'demo-internal-only',
+   null, 'synthetic-generator', 'demo-internal-only', '2026-07-31',
    'Classic pompadour volume on top with tapered sides.', 'high', 30, 6),
   ('a0000000-0000-4000-8000-000000000001', 'slick-back', 'Slick back',
-   'hairstyles/catalog/slick-back.svg', 'hairstyles/references/slick-back.svg',
-   null, 'TBD', 'TBD', null,
+   'hairstyles/slick-back/catalog.png', 'hairstyles/slick-back/ai-reference.png', 'hairstyles/slick-back/thumbnail.png',
+   '1.0.0-synthetic-mvp', 'synthetic-generated-mvp', 'demo-internal-only',
+   null, 'synthetic-generator', 'demo-internal-only', '2026-07-31',
    'Slick back with polished top and controlled sides.', 'medium', 15, 7),
   ('a0000000-0000-4000-8000-000000000001', 'curly-crop', 'Curly crop',
-   'hairstyles/catalog/curly-crop.svg', 'hairstyles/references/curly-crop.svg',
-   null, 'TBD', 'TBD', null,
+   'hairstyles/curly-crop/catalog.png', 'hairstyles/curly-crop/ai-reference.png', 'hairstyles/curly-crop/thumbnail.png',
+   '1.0.0-synthetic-mvp', 'synthetic-generated-mvp', 'demo-internal-only',
+   null, 'synthetic-generator', 'demo-internal-only', '2026-07-31',
    'Curly crop keeping natural curl pattern with shaped fringe.', 'medium', 15, 8);
 
--- Tueâ€“Fri morning + afternoon, Sat full day (ISO weekday)
+-- Tue–Fri morning + afternoon, Sat full day (ISO weekday)
 insert into public.availability_rules (salon_id, staff_id, weekday, start_local, end_local)
 select
   'a0000000-0000-4000-8000-000000000001',
@@ -85,4 +95,3 @@ from (
     (5, '16:00', '20:00'),
     (6, '10:00', '18:00')
 ) as w(weekday, start_local, end_local);
-

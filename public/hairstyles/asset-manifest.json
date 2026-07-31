@@ -1,0 +1,16 @@
+{
+  "assetVersion": "1.0.0-synthetic-mvp",
+  "provenance": "synthetic-generated-mvp",
+  "usageRights": "demo-internal-only",
+  "generatedAt": "2026-07-31T14:17:35.945Z",
+  "styles": [
+    "low-fade",
+    "mid-fade",
+    "high-fade",
+    "french-crop",
+    "buzz-cut",
+    "pompadour",
+    "slick-back",
+    "curly-crop"
+  ]
+}

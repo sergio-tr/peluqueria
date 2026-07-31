@@ -18,7 +18,8 @@
 
 ### hairstyles
 `id`, `salon_id`, `slug`, `name`,  
-`catalog_image_path`, `ai_reference_image_path`,  
+`catalog_image_path`, `ai_reference_image_path`, `thumbnail_image_path`,
+`asset_version`, `provenance`, `usage_rights`,
 `source_url`, `source_author`, `source_license`, `license_checked_at`,  
 `prompt_modifier`, `complexity` (`low|medium|high`), `extra_minutes`, `active`, `sort_order`
 
