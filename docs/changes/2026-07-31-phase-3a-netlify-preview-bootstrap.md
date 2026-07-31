@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-31  
 **Branch:** `chore/netlify-preview-bootstrap`  
-**Pull request:** pending (Draft — preview URL not verified live)  
+**Pull request:** https://github.com/sergio-tr/peluqueria/pull/10 (Draft)  
 **Recovery phase:** 3A  
 **Status:** COMPLETE (config/docs); VERIFICATION blocked on operator credentials
 
