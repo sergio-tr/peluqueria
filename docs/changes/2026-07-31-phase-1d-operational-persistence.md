@@ -65,6 +65,20 @@ Confirmation tokens stored as SHA-256 hashes only. Admin routes require `ADMIN_D
 
 Requires `DATA_STORE=supabase` and service role key. Roll back via revert PR.
 
+## Documentation updated
+
+- This change record
+- `docs/agent-runs/2026-07-31-phase-1d.md`
+
+## Remaining risks
+
+- Live Supabase not verified in CI for operational writes
+
+## Verification status
+
+- Tests: unit mappers + booking create
+- Independent verifier: pending at merge time
+
 ## Stack dependency
 
 Depends on PR #4 (`security/secure-photo-storage`). Merge order: #1 → #2 → #3 → #4 → this.
