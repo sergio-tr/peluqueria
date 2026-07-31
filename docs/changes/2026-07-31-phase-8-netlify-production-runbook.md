@@ -52,10 +52,10 @@ None. Rollback policy: previous Netlify deploy + kill switches; forward migratio
 
 | Check | Command | Result |
 |------|---------|--------|
-| Lint | `npm run lint` | pending (check-pr-readiness) |
-| Typecheck | `npm run typecheck` | pending |
-| Tests | `npm run test` | pending |
-| Build | `npm run build` | pending |
+| Lint | `npm run lint` | PASS |
+| Typecheck | `npm run typecheck` | PASS |
+| Tests | `npm run test` | PASS (139) |
+| Build | `npm run build` | PASS |
 
 No code changes beyond `netlify.toml` comment/context; existing CI covers regression.
 
