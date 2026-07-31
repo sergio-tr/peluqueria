@@ -13,7 +13,7 @@ Decisiones fijadas sin repreguntar. Si cambian, actualizar este archivo y los AD
 | A7 | Producción: `AI_PROVIDER=replicate-qwen`. Mock solo local/CI/`AI_PROVIDER=mock` explícito. |
 | A8 | Modelo: `REPLICATE_MODEL=qwen/qwen-image-edit-plus` (endpoint oficial; sin pin de versión obligatorio). |
 | A9 | Presupuesto conceptual 30 €/mes; límites vía env (ver `ai-provider.md`). |
-| A10 | Retención imágenes demo: draft 24h; no confirmada 7d; confirmada 7d post-cita; borrado admin. |
+| A10 | Retención imágenes demo: draft 24h; no confirmada 7d; confirmada **30d post-cita** (C-07); borrado admin. |
 | A11 | Holds: pending review 24h; pending customer 12h; confirmed bloqueo definitivo. |
 | A12 | Margen duración global default = 0 min. |
 | A13 | Complejidad seed: buzz baja; french crop / slick / curly media; fades y pompadour alta (ajustable). |

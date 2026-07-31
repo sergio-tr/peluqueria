@@ -16,6 +16,7 @@ Do not place secrets in this document.
 | OP-005 | 3A | Create Netlify site, connect GitHub repo, set preview env vars | Preview HTTPS URL; see `docs/deployment.md` checklist (gate secrets, `NEXT_PUBLIC_SITE_URL`, `CRON_SECRET`) | PENDING |
 | OP-006 | 3A | Apply Supabase migrations on remote project | `npx supabase link` + `npx supabase db push`; optional controlled seed for preview | PENDING |
 | OP-007 | 3A | Run post-deploy health checklist | Verify `GET /api/health`, gate redirect, gated `GET /api/services`, cron auth — document preview URL when live | PENDING |
+| OP-011 | 5 | Verify purge cron after deploy | `POST /api/cron/purge` with `CRON_SECRET`; confirm Netlify function `purge-images` scheduled; set `PURGE_ENABLED=false` to disable | PENDING |
 
 ## OP-002 — Netlify CLI login
 
@@ -52,6 +53,22 @@ curl -sS -o /dev/null -w "%{http_code}\n" "https://<preview-host>/api/services"
 ```
 
 Expected: health `200`; services `401` without demo cookie.
+
+## OP-011 — Purge cron (Phase 5)
+
+Replace `<preview-host>` and use the same `CRON_SECRET` as expire cron:
+
+```bash
+curl -sS -X POST \
+  -H "Authorization: Bearer $CRON_SECRET" \
+  "https://<preview-host>/api/cron/purge"
+```
+
+Expected: `200` with JSON `{ purgedPhotos, purgedPaths, clearedBookings, clearedJobs, tiers }`.
+
+Kill switch: set `PURGE_ENABLED=false` in Netlify env to disable purge without redeploying code logic.
+
+Verify in Netlify UI → Functions → `purge-images` is scheduled (`@daily`).
 
 ## OP-008 — Replicate webhook (Phase 3B)
 

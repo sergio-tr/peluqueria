@@ -59,9 +59,11 @@ Body: `{ action, proposedStartsAt?, durationMinutes?, comment? }` — TX complet
 ### `GET /api/admin/agenda?from&to`
 ### `GET /api/admin/ai-usage` — mes: gens, success, fail, cost estimado.
 ### `POST /api/admin/expire-due` — misma op que Scheduled Function.
-### `POST /api/admin/photos/delete` — borrado manual.
+### `POST /api/admin/purge` — misma op que Scheduled Function purge.
+### `POST /api/admin/photos/delete` — borrado manual. Body: `{ photoId }`.
 ### `GET /api/admin/demo-inbox`
 
 ## Internal
 
 ### Scheduled: `POST /api/cron/expire` (protegido por `CRON_SECRET`) → expireDue idempotente.
+### Scheduled: `POST /api/cron/purge` (protegido por `CRON_SECRET`) → purge idempotente (ADR-012).
