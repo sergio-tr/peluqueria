@@ -1,0 +1,2 @@
+#!/bin/sh
+node .cursor/scripts/guard-current-branch.mjs

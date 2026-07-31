@@ -1,0 +1,15 @@
+---
+alwaysApply: true
+---
+
+# Flujo Git obligatorio
+
+- Después del bootstrap inicial, `main` es de solo lectura.
+- Antes de editar, ejecuta `git status`, `git branch --show-current`, `git remote -v` y `git fetch --all --prune`.
+- Crea una rama por cambio con un prefijo permitido.
+- Todas las PR apuntan a `main`.
+- Nunca ejecutes `git merge`, `gh pr merge`, force push ni pushes directos a `main`.
+- No reescribas historia compartida.
+- No elimines ramas de las que dependan otras PR.
+- En stacks, crea la nueva rama desde la rama predecesora, pero abre la PR contra `main`.
+- El usuario fusionará las PR en orden usando merge commit para conservar la genealogía del stack.

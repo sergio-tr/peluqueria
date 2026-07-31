@@ -1,0 +1,29 @@
+#!/bin/sh
+
+zero="0000000000000000000000000000000000000000"
+
+while read local_ref local_sha remote_ref remote_sha
+do
+  if [ "$remote_ref" = "refs/heads/main" ]; then
+    if [ "$remote_sha" = "$zero" ]; then
+      echo "Allowing one-time creation of remote main."
+    else
+      echo "Direct updates to main are prohibited. Open a pull request."
+      exit 1
+    fi
+  fi
+
+  if [ "$local_sha" = "$zero" ]; then
+    echo "Remote branch deletion is prohibited by the project workflow."
+    exit 1
+  fi
+
+  if [ "$remote_sha" != "$zero" ]; then
+    if ! git merge-base --is-ancestor "$remote_sha" "$local_sha"; then
+      echo "Non-fast-forward push is prohibited."
+      exit 1
+    fi
+  fi
+done
+
+exit 0

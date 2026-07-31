@@ -1,0 +1,16 @@
+---
+globs: src/**/*.ts, src/**/*.tsx, netlify/**/*.ts, scripts/**/*.ts, scripts/**/*.mts
+alwaysApply: false
+---
+
+# TypeScript y Next.js
+
+- TypeScript strict.
+- Prohibido `any` salvo justificación en comentario y change record.
+- Preferir tipos derivados de esquemas Zod en fronteras.
+- Server-only para service role, secretos y providers privados.
+- No importar módulos server-only desde Client Components.
+- Componentes pequeños y accesibles.
+- Formularios con React Hook Form + Zod cuando ya sea el patrón del proyecto.
+- Respetar `prefers-reduced-motion`.
+- No introducir nuevas dependencias si la plataforma o stack actual cubre la necesidad.

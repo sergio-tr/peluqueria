@@ -1,0 +1,18 @@
+---
+globs: supabase/**, src/infrastructure/supabase/**, src/infrastructure/persistence/**, src/application/**/*.ts, src/app/api/**/*.ts
+alwaysApply: false
+---
+
+# Supabase y Postgres
+
+- Postgres es la fuente de verdad productiva.
+- Producción debe fallar si se configura memory.
+- Service role solo en servidor.
+- RLS explícita y documentada.
+- Usa migraciones forward-only y expand/contract.
+- No uses `migrate down` como rollback genérico.
+- Prueba migraciones desde una base limpia.
+- Persistir UTC; presentar Europe/Madrid.
+- Garantizar solapamientos mediante Postgres, no solo código.
+- Transiciones y liberaciones se ejecutan atómicamente.
+- Tokens: guardar solo hash.

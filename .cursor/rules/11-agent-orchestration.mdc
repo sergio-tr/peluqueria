@@ -1,0 +1,19 @@
+---
+description: Delegación a subagentes, ejecución de fases recovery y verificación independiente.
+alwaysApply: false
+---
+
+# Orquestación
+
+Para tareas complejas:
+
+1. Planner revisa requisitos y alcance.
+2. Architect valida diseño y ADR.
+3. Especialista implementa.
+4. Test engineer verifica.
+5. Security auditor revisa riesgos.
+6. Documentation governor actualiza fuentes de verdad.
+7. Independent verifier cuestiona claims.
+8. PR manager abre la PR y no la fusiona.
+
+Usa trabajo paralelo solo para tareas independientes. No permitas que dos agentes editen los mismos archivos simultáneamente. Cada handoff debe incluir archivos, decisiones, tests y riesgos.

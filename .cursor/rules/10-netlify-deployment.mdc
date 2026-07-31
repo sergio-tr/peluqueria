@@ -1,0 +1,15 @@
+---
+description: Despliegues, previews, Netlify, variables, cron, rollback y reutilización del mecanismo del portfolio.
+alwaysApply: false
+---
+
+# Netlify
+
+- Inspecciona el portfolio del mismo workspace antes de diseñar el despliegue.
+- Reutiliza su mecanismo, scripts y patrón no secreto.
+- No copies site ID, tokens, variables, dominio ni `.netlify/state.json`.
+- Preview remoto en 3A; producción en 8.
+- Preview y producción deben ser fail-closed.
+- Rollback con previous deploy y kill switches.
+- Verifica scheduled functions y webhook HTTPS.
+- Registra comandos y evidencia en `docs/deployment.md`.

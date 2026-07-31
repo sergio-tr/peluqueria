@@ -1,0 +1,15 @@
+---
+description: Arquitectura, límites de capas, scope del MVP y decisiones técnicas del proyecto Peluquería Nowi.
+alwaysApply: false
+---
+
+# Arquitectura y scope
+
+- Conserva las capas UI, application, domain e infrastructure.
+- El dominio no importa Next.js, Supabase, Replicate ni Netlify.
+- Usa puertos solo cuando exista al menos un consumidor real o una sustitución prevista y aprobada.
+- Providers externos se adaptan en infraestructura.
+- Los endpoints validan entradas con Zod y convierten a comandos de aplicación.
+- Errores tipados; no lanzar strings.
+- Operaciones con efectos externos deben ser idempotentes.
+- No añadir multi-tenant completo, pagos, SMS, WhatsApp, Calendar bidireccional, mobile app, entrenamiento o análisis de atributos sensibles.
