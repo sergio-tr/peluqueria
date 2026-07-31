@@ -22,6 +22,7 @@ Do not place secrets in this document.
 | OP-014 | 8 | Production deploy (`netlify deploy --build --prod` or Git production branch) | After OP-013; requires OP-002 login and linked site; **do not** publish until env complete | PENDING |
 | OP-015 | 8 | Register Replicate webhook for production URL | `WEBHOOK_BASE_URL` / `NEXT_PUBLIC_SITE_URL` = production HTTPS host; register `https://<production-host>/api/webhooks/replicate` in Replicate dashboard | PENDING |
 | OP-016 | 8 | Run production post-deploy health checklist | Health, gate, cron auth, scheduled functions `@hourly` / `@daily`; document production URL when verified — Phase 9 owns full smoke DoD | PENDING |
+| OP-017 | 9 | Run production DoD smoke checklist | Full E2E on public URL with Replicate real + Demo Inbox; fill evidence JSON; see `docs/dod-smoke-checklist.md` | PENDING |
 
 ## OP-002 — Netlify CLI login
 
@@ -196,3 +197,43 @@ Expected: health `200`; services `401` without demo cookie; cron expire `200` (n
 Verify Netlify UI → Functions → `expire-bookings` (`@hourly`), `purge-images` (`@daily`).
 
 Rollback: Netlify UI → Deploys → publish previous deploy (ADR-015). No `migrate down`.
+
+## OP-017 — Production DoD smoke (Phase 9)
+
+**DoD status: NOT VERIFIED** until this operator action completes with dated evidence.
+
+Prerequisites: OP-013 (production env), OP-014 (prod deploy), OP-015 (Replicate webhook), OP-016 (health checks pass).
+
+1. Record production URL and deploy commit in evidence file:
+
+   ```bash
+   cd peluqueria
+   npm run smoke:dod -- --init
+   # → smoke-evidence/dod-smoke-<runId>.json (gitignored)
+   ```
+
+2. Edit the JSON: set `productionUrl`, `gitCommit`, then execute each step in `docs/dod-smoke-checklist.md`.
+
+3. For each step, capture:
+   - ISO-8601 `timestamp`
+   - `status`: `PASS` or `FAIL`
+   - `evidence.screenshot` path under `smoke-evidence/` (no faces or PII in Git)
+   - `internalIds` only (booking ID, job ID, inbox message ID — no customer data)
+
+4. Flow sequence (must all pass):
+
+   Acceso → foto → consent → corte → **Replicate real** (no mock badge) → solicitud → admin revisión → propuesta → **Demo Inbox** → confirm (incognito) → agenda bloqueada → solape rechazado.
+
+5. Overlap test: after confirming booking A, submit booking B for the same barber/time window — expect rejection.
+
+6. When all steps pass, set `dodStatus` to `VERIFIED`, fill `attestation`, then validate:
+
+   ```bash
+   npm run smoke:dod -- --validate smoke-evidence/dod-smoke-<runId>.json
+   ```
+
+7. Update `docs/implementation-status.md` DoD section with run ID and date — **only after** validation passes.
+
+Kill switch during smoke: `AI_GENERATION_ENABLED=false`.
+
+**Do not** commit `smoke-evidence/` or subject photos.

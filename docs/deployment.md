@@ -300,7 +300,7 @@ curl -sS "https://<production-host>/api/health"
 curl -sS -o /dev/null -w "%{http_code}\n" "https://<production-host>/api/services"
 ```
 
-Full end-to-end smoke DoD (Replicate real, Demo Inbox, booking flow) is **Phase 9**, not Phase 8.
+Full end-to-end smoke DoD (Replicate real, Demo Inbox, booking flow) is **Phase 9**, not Phase 8. Checklist: `docs/dod-smoke-checklist.md` (OP-017). **DoD status: NOT VERIFIED** until operator completes smoke with evidence.
 
 ### Rollback (production)
 
