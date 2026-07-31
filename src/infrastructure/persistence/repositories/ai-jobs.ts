@@ -195,6 +195,7 @@ export async function updateAiJob(
     errorCode?: string | null;
     resultImagePath?: string | null;
     pendingResultUrl?: string | null;
+    externalPredictionId?: string | null;
     reportedModelVersion?: string | null;
     latencyMs?: number | null;
     completedAt?: Date | null;
@@ -210,6 +211,9 @@ export async function updateAiJob(
   }
   if (patch.pendingResultUrl !== undefined) {
     row.pending_result_url = patch.pendingResultUrl;
+  }
+  if (patch.externalPredictionId !== undefined) {
+    row.external_prediction_id = patch.externalPredictionId;
   }
   if (patch.reportedModelVersion !== undefined) {
     row.reported_model_version = patch.reportedModelVersion;
@@ -249,6 +253,62 @@ export async function hasActiveJobForSession(
 
 export function isTerminalAiJobStatus(status: AiJobStatus): boolean {
   return status === "SUCCEEDED" || status === "FAILED";
+}
+
+export type AiJobMonthlyStats = {
+  total: number;
+  succeeded: number;
+  failed: number;
+  inProgress: number;
+  estimatedCostUsd: number;
+};
+
+export async function getAiJobMonthlyStats(
+  client: SupabaseClient,
+  salonId: string,
+  monthKeyValue: string,
+): Promise<AiJobMonthlyStats> {
+  const monthStart = `${monthKeyValue}-01T00:00:00.000Z`;
+  const [year, month] = monthKeyValue.split("-").map(Number);
+  const nextMonth = month === 12 ? `${year + 1}-01` : `${year}-${String(month + 1).padStart(2, "0")}`;
+  const monthEnd = `${nextMonth}-01T00:00:00.000Z`;
+
+  const { data, error } = await client
+    .from("ai_jobs")
+    .select("status, estimated_cost_usd")
+    .eq("salon_id", salonId)
+    .gte("created_at", monthStart)
+    .lt("created_at", monthEnd);
+  if (error) throw error;
+
+  const rows = (data ?? []) as Array<{
+    status: AiJobStatus;
+    estimated_cost_usd: number | null;
+  }>;
+
+  let succeeded = 0;
+  let failed = 0;
+  let inProgress = 0;
+  let estimatedCostUsd = 0;
+
+  for (const row of rows) {
+    if (row.status === "SUCCEEDED") {
+      succeeded += 1;
+      estimatedCostUsd += row.estimated_cost_usd ?? 0;
+    } else if (row.status === "FAILED") {
+      failed += 1;
+    } else {
+      inProgress += 1;
+    }
+  }
+
+  return {
+    total: rows.length,
+    succeeded,
+    failed,
+    inProgress,
+    estimatedCostUsd,
+  };
 }
 
 export function extractReplicateOutput(

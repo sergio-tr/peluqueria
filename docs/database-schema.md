@@ -29,7 +29,7 @@
 `external_prediction_id`, `reported_model_version`,
 `prompt_version`, `input_parameters_json` (sin signed URLs ni PII),
 `estimated_cost_usd`, `latency_ms`, `error_code`,
-`source_image_path`, `reference_image_path`, `result_image_path`, `pending_result_url` (server-only, Phase 3B→3C),
+`source_image_path`, `reference_image_path`, `result_image_path` (private Storage, Phase 3C), `pending_result_url` (server-only recovery on persist failure),
 `consent_policy_version`, `ip_hash`,
 `created_at`, `updated_at`, `completed_at`
 
@@ -62,7 +62,7 @@
 `id`, `salon_id`, `booking_request_id`, `from_status`, `to_status`, `actor_type`, `actor_id`, `payload_json`, `created_at`
 
 ### ai_usage_counters
-`id`, `salon_id`, `period_type` (`day|month`), `period_key`, `ip_hash` (nullable para mes global), `count`, `unique (salon_id, period_type, period_key, ip_hash)`
+`id`, `salon_id`, `period_type` (`day|month|session`), `period_key`, `ip_hash` (nullable), `session_id` (nullable), `count`, unique composite index
 
 ## Solapes
 

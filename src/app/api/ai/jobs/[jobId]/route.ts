@@ -23,7 +23,7 @@ export async function GET(_request: Request, { params }: Params) {
       if (job.resultImagePath) {
         resultPreviewUrl = await createPhotoPreviewUrl(
           supabase,
-          config.photosBucket,
+          config.resultsBucket,
           job.resultImagePath,
         );
       } else if (job.provider === "mock") {

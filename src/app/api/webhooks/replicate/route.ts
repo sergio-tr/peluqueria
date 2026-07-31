@@ -42,9 +42,9 @@ export async function POST(request: Request) {
 
     const payload = JSON.parse(rawBody) as Parameters<
       typeof processReplicateWebhook
-    >[2]["payload"];
+    >[3]["payload"];
 
-    const result = await processReplicateWebhook(supabase, SALON_ID, {
+    const result = await processReplicateWebhook(supabase, config, SALON_ID, {
       webhookId,
       payload,
     });

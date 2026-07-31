@@ -10,6 +10,8 @@ Do not place secrets in this document.
 | OP-002 | 3A | Run `netlify login` and confirm CLI auth | Preview deploy and site link (`netlify init` / `netlify deploy --build`) | PENDING |
 | OP-003 | 3B | Provide Replicate token through secure environment | Real inference — set `REPLICATE_API_TOKEN` in Netlify preview scope | PENDING |
 | OP-008 | 3B | Configure Replicate webhook signing secret and callback URL | Set `REPLICATE_WEBHOOK_SECRET` (from Replicate dashboard) and `WEBHOOK_BASE_URL` or `NEXT_PUBLIC_SITE_URL` to preview HTTPS host; register webhook URL `https://<preview-host>/api/webhooks/replicate` | PENDING |
+| OP-009 | 3C | Create Supabase `results` Storage bucket (private) | AI output persistence; set `SUPABASE_STORAGE_BUCKET_RESULTS=results` in Netlify preview env | PENDING |
+| OP-010 | 3C | Set AI budget env on preview | `AI_MONTHLY_BUDGET_EUR=30` (default); optional `AI_EUR_USD_RATE` for USD→EUR estimate | PENDING |
 | OP-004 | 3A | Create Supabase project and set preview env vars in Netlify | Remote persistence for preview (`NEXT_PUBLIC_SUPABASE_*`, `SUPABASE_SERVICE_ROLE_KEY`, `DATA_STORE=supabase`) | PENDING |
 | OP-005 | 3A | Create Netlify site, connect GitHub repo, set preview env vars | Preview HTTPS URL; see `docs/deployment.md` checklist (gate secrets, `NEXT_PUBLIC_SITE_URL`, `CRON_SECRET`) | PENDING |
 | OP-006 | 3A | Apply Supabase migrations on remote project | `npx supabase link` + `npx supabase db push`; optional controlled seed for preview | PENDING |
@@ -64,3 +66,13 @@ Expected: health `200`; services `401` without demo cookie.
 4. Smoke: create job via demo flow → verify webhook delivery row and job `RUNNING` with D-02 metadata.
 
 Kill switch: set `AI_GENERATION_ENABLED=false` to disable generation without redeploying code.
+
+## OP-009 — Results Storage bucket (Phase 3C)
+
+1. In Supabase Dashboard → Storage, create a **private** bucket named `results` (or match `SUPABASE_STORAGE_BUCKET_RESULTS`).
+2. In Netlify preview env, set `SUPABASE_STORAGE_BUCKET_RESULTS=results`.
+3. Smoke: create AI job → webhook succeeds → `GET /api/ai/jobs/[id]` returns `resultPreviewUrl` (signed, ~60s TTL) with no Replicate URL in response.
+
+## OP-010 — AI budget (Phase 3C)
+
+Default budget is **30 €/month** (`AI_MONTHLY_BUDGET_EUR=30`, D-04A). Alerts log at 70%, 90%, and 100% of budget (`[ai-budget-alert]` in function logs). Admin panel: `GET /api/admin/ai-usage` (auth required). Numeric monthly generation cap remains pending benchmark (D-04B).
