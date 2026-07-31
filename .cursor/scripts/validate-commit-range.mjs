@@ -20,7 +20,11 @@ try {
 
 const subjects = git(["log", "--format=%s", `${mergeBase}..HEAD`])
   .split(/\r?\n/)
-  .filter(Boolean);
+  .filter(Boolean)
+  // GitHub Actions checks out a temporary merge commit whose subject is not conventional.
+  .filter((subject) => !/^Merge /i.test(subject))
+  // Strip UTF-8 BOM if a commit message was written with a BOM-prefixed editor.
+  .map((subject) => subject.replace(/^\uFEFF/, ""));
 
 const conventional =
   /^(feat|fix|refactor|test|docs|chore|build|ci|perf|style|revert)(\([a-z0-9._/-]+\))?!?: [a-z0-9][^\r\n]{1,100}$/;
