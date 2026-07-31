@@ -87,6 +87,47 @@ export async function listActiveHairstyles(
   return (data as HairstyleRow[]).map(mapHairstyle);
 }
 
+export async function getServiceById(
+  client: SupabaseClient,
+  salonId: string,
+  serviceId: string,
+) {
+  const { data, error } = await client
+    .from("services")
+    .select(
+      "id,slug,name,price_cents,base_minutes,requires_tryon,sort_order",
+    )
+    .eq("salon_id", salonId)
+    .eq("id", serviceId)
+    .eq("active", true)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapService(data as ServiceRow) : null;
+}
+
+export async function getHairstyleById(
+  client: SupabaseClient,
+  salonId: string,
+  hairstyleId: string,
+) {
+  const { data, error } = await client
+    .from("hairstyles")
+    .select(
+      "id,slug,name,catalog_image_path,ai_reference_image_path,complexity,extra_minutes,prompt_modifier,sort_order",
+    )
+    .eq("salon_id", salonId)
+    .eq("id", hairstyleId)
+    .eq("active", true)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  const row = data as HairstyleRow;
+  return {
+    ...mapHairstyle(row),
+    aiReferenceImagePath: row.ai_reference_image_path,
+  };
+}
+
 export async function listAvailabilityRules(
   client: SupabaseClient,
   salonId: string,
