@@ -18,6 +18,10 @@ Do not place secrets in this document.
 | OP-007 | 3A | Run post-deploy health checklist | Verify `GET /api/health`, gate redirect, gated `GET /api/services`, cron auth — document preview URL when live | PENDING |
 | OP-011 | 5 | Verify purge cron after deploy | `POST /api/cron/purge` with `CRON_SECRET`; confirm Netlify function `purge-images` scheduled; set `PURGE_ENABLED=false` to disable | PENDING |
 | OP-012 | 6 | Run AI benchmark (smoke 16 → matrix 48) | Requires `REPLICATE_API_TOKEN`, 6 subject photos in `benchmark-fixtures/photos/`, production 2D PNG ai_reference assets (not SVG); budget ~30 EUR | PENDING |
+| OP-013 | 8 | Set production env vars in Netlify (Production scope) | Fail-closed checklist: `APP_ENV=production`, `DATA_STORE=supabase`, `AI_PROVIDER=replicate-qwen`, gate secrets (no defaults), Replicate token + webhook secret, `NEXT_PUBLIC_SITE_URL` — see `docs/deployment.md` | PENDING |
+| OP-014 | 8 | Production deploy (`netlify deploy --build --prod` or Git production branch) | After OP-013; requires OP-002 login and linked site; **do not** publish until env complete | PENDING |
+| OP-015 | 8 | Register Replicate webhook for production URL | `WEBHOOK_BASE_URL` / `NEXT_PUBLIC_SITE_URL` = production HTTPS host; register `https://<production-host>/api/webhooks/replicate` in Replicate dashboard | PENDING |
+| OP-016 | 8 | Run production post-deploy health checklist | Health, gate, cron auth, scheduled functions `@hourly` / `@daily`; document production URL when verified — Phase 9 owns full smoke DoD | PENDING |
 
 ## OP-002 — Netlify CLI login
 
@@ -128,3 +132,67 @@ npm run benchmark:aggregate -- benchmark-results/matrix-48-<runId>.json
 Expected dry-run: all generations `status: PENDING`, `d04b.status: PENDING_BENCHMARK`.
 
 Do not commit `benchmark-results/` or subject photos.
+
+## OP-013 — Production environment (Phase 8)
+
+After preview validation (OP-005, OP-007), configure Netlify UI → Environment variables → **Production** scope.
+
+Required names (values operator-supplied only; never commit):
+
+- `APP_ENV=production`, `DATA_STORE=supabase`
+- `NEXT_PUBLIC_SITE_URL=https://<production-host>` (no trailing slash)
+- `DEMO_ACCESS_CODE`, `DEMO_SESSION_SECRET` (≥32 chars), `IP_HASH_SECRET`, `CRON_SECRET`
+- `NEXT_PUBLIC_SUPABASE_*`, `SUPABASE_SERVICE_ROLE_KEY`, storage bucket names
+- `AI_PROVIDER=replicate-qwen`, `AI_GENERATION_ENABLED=true`
+- `REPLICATE_API_TOKEN`, `REPLICATE_WEBHOOK_SECRET`, `WEBHOOK_BASE_URL` (or rely on site URL)
+
+**Forbidden in production:** `DATA_STORE=memory`, unset gate secrets, `AI_PROVIDER=mock`.
+
+Kill switches (set without code change): `AI_GENERATION_ENABLED=false`, `PURGE_ENABLED=false`, `PHOTO_UPLOAD_ENABLED=false`.
+
+Full checklist: `docs/deployment.md` → Production release (Phase 8).
+
+## OP-014 — Production deploy (Phase 8)
+
+Prerequisites: OP-002 (CLI login), OP-013 (Production env complete).
+
+```bash
+cd peluqueria
+netlify login
+netlify link                    # if not linked
+netlify deploy --build --prod   # operator only — NOT until OP-013 done
+```
+
+Alternative: Git-connected production branch deploy in Netlify UI (no CLI).
+
+**Production is not declared live** until OP-016 and Phase 9 smoke DoD.
+
+## OP-015 — Replicate webhook (production)
+
+1. Confirm production HTTPS host is live (OP-014).
+2. In Netlify Production env, set `WEBHOOK_BASE_URL=https://<production-host>` (or match `NEXT_PUBLIC_SITE_URL`).
+3. In Replicate dashboard, register webhook URL:
+
+   `https://<production-host>/api/webhooks/replicate`
+
+4. Set `REPLICATE_WEBHOOK_SECRET` in Production env to match Replicate signing secret.
+
+Kill switch: `AI_GENERATION_ENABLED=false`.
+
+## OP-016 — Production health verification
+
+Replace `<production-host>` with the production deploy URL:
+
+```bash
+curl -sS "https://<production-host>/api/health"
+curl -sS -o /dev/null -w "%{http_code}\n" "https://<production-host>/api/services"
+curl -sS -X POST \
+  -H "Authorization: Bearer $CRON_SECRET" \
+  "https://<production-host>/api/cron/expire"
+```
+
+Expected: health `200`; services `401` without demo cookie; cron expire `200` (not `401`).
+
+Verify Netlify UI → Functions → `expire-bookings` (`@hourly`), `purge-images` (`@daily`).
+
+Rollback: Netlify UI → Deploys → publish previous deploy (ADR-015). No `migrate down`.

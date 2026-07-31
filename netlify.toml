@@ -1,5 +1,5 @@
 # Peluquería Nowi — Netlify (Next.js App Router)
-# Preview bootstrap: Phase 3A. Production release: Phase 8.
+# Preview bootstrap: Phase 3A. Production release runbook: Phase 8.
 # @netlify/plugin-nextjs manages publish output; do not set publish manually.
 
 [build]
@@ -14,7 +14,12 @@
 [functions]
   node_bundler = "esbuild"
 
-# Scheduled function: hourly booking expiration (Phase 2C).
-# Scheduled function: daily image retention purge (Phase 5).
-# Requires CRON_SECRET and NEXT_PUBLIC_SITE_URL in Netlify env (preview scope).
-# Verify in Netlify UI → Functions → expire-bookings / purge-images after first deploy.
+# Production context: fail-closed runtime (env.ts rejects memory; AI fail-closed on remote).
+# Secrets and provider tokens remain in Netlify UI → Production scope only.
+[context.production.environment]
+  APP_ENV = "production"
+
+# Scheduled functions (verify after first deploy in Netlify UI → Functions):
+#   expire-bookings — @hourly (Phase 2C)
+#   purge-images    — @daily (Phase 5)
+# Requires CRON_SECRET and NEXT_PUBLIC_SITE_URL in the matching env scope.
