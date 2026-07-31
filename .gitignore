@@ -34,6 +34,10 @@ yarn-error.log*
 .env*
 !.env.example
 
+# AI benchmark (subject photos + run outputs — never commit)
+/benchmark-fixtures/photos/
+/benchmark-results/
+
 # vercel
 .vercel
 

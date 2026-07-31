@@ -1,0 +1,50 @@
+{
+  "runId": "TEMPLATE",
+  "phase": "matrix-48",
+  "status": "PENDING",
+  "mode": "dry-run",
+  "startedAt": "2026-07-31T12:00:00.000Z",
+  "finishedAt": "2026-07-31T12:00:00.000Z",
+  "model": "qwen/qwen-image-edit-plus",
+  "promptVersion": "v1-2026-07-30",
+  "assetVersion": "1.0.0-synthetic-mvp",
+  "generations": [
+    {
+      "id": "photo-01__low-fade",
+      "photoId": "photo-01",
+      "hairstyleSlug": "low-fade",
+      "status": "PENDING",
+      "mode": "dry-run",
+      "latencyMs": null,
+      "costUsd": null,
+      "teachable": null,
+      "weightedScore": null,
+      "dimensionScores": {
+        "identity": null,
+        "fidelity": null,
+        "realism": null,
+        "deformations": null,
+        "latency": null,
+        "cost": null
+      }
+    }
+  ],
+  "summary": {
+    "total": 48,
+    "teachableCount": 0,
+    "teachablePercent": 0,
+    "passesTeachableThreshold": false,
+    "meanWeightedScore": null,
+    "latencyMsP50": null,
+    "latencyMsP95": null,
+    "costUsdP50": null,
+    "costUsdP95": null,
+    "d04b": {
+      "status": "PENDING_BENCHMARK",
+      "proposedMonthlyGenCap": null,
+      "p95CostUsd": null,
+      "p95CostEur": null,
+      "rationale": "D-04B cap remains PENDING_BENCHMARK until definitive benchmark supplies p95 cost per generation."
+    }
+  }
+}

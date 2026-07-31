@@ -1,0 +1,53 @@
+{
+  "description": "Golden vectors shared by vitest and scripts/ai-benchmark/lib/aggregate.mjs",
+  "cases": [
+    {
+      "name": "perfect-scores",
+      "scores": {
+        "identity": 5,
+        "fidelity": 5,
+        "realism": 5,
+        "deformations": 5,
+        "latency": 5,
+        "cost": 5
+      },
+      "expectedWeightedScore": 100
+    },
+    {
+      "name": "identity-only",
+      "scores": {
+        "identity": 5,
+        "fidelity": 0,
+        "realism": 0,
+        "deformations": 0,
+        "latency": 0,
+        "cost": 0
+      },
+      "expectedWeightedScore": 30
+    },
+    {
+      "name": "mixed-rubric",
+      "scores": {
+        "identity": 5,
+        "fidelity": 4,
+        "realism": 3,
+        "deformations": 2,
+        "latency": 1,
+        "cost": 0
+      },
+      "expectedWeightedScore": 68
+    }
+  ],
+  "teachable": [
+    { "teachableCount": 13, "total": 16, "expectedPercent": 81.25, "expectedPass": true },
+    { "teachableCount": 12, "total": 16, "expectedPercent": 75, "expectedPass": false },
+    { "teachableCount": 39, "total": 48, "expectedPercent": 81.25, "expectedPass": true }
+  ],
+  "percentile": [
+    {
+      "values": [1000, 2000, 3000, 4000, 5000],
+      "p95": 5000,
+      "p50": 3000
+    }
+  ]
+}

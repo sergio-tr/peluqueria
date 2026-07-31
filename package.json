@@ -9,7 +9,11 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --config vitest.config.mts",
-    "generate:hairstyle-assets": "node scripts/generate-hairstyle-assets.mjs"
+    "generate:hairstyle-assets": "node scripts/generate-hairstyle-assets.mjs",
+    "benchmark:smoke": "node scripts/ai-benchmark/run-smoke-16.mjs",
+    "benchmark:matrix": "node scripts/ai-benchmark/run-matrix-48.mjs",
+    "benchmark:aggregate": "node scripts/ai-benchmark/aggregate-results.mjs",
+    "benchmark:self-test": "node scripts/ai-benchmark/aggregate-results.mjs --self-test"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
