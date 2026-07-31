@@ -7,7 +7,7 @@ import { SALON_ID } from "@/infrastructure/supabase/client";
 
 export async function GET(request: Request) {
   try {
-    requireAdmin(request);
+    await requireAdmin(request);
     const { supabase } = requireSupabase();
     const messages = await listDemoInboxMessages(supabase, SALON_ID);
     return NextResponse.json({

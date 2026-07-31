@@ -6,7 +6,7 @@ import { requireSupabase } from "@/infrastructure/api/require-supabase";
 
 export async function POST(request: Request) {
   try {
-    requireAdmin(request);
+    await requireAdmin(request);
     const { supabase } = requireSupabase();
     const count = await expireDueBookingsWithEvents(supabase);
     return NextResponse.json({ expired: count });
