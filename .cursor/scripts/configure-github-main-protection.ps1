@@ -50,7 +50,7 @@ try {
         throw "GitHub rejected the branch protection request."
     }
 
-    Write-Host "Protection configured for $repo:$Branch"
+    Write-Host "Protection configured for ${repo}:${Branch}"
 } finally {
     Remove-Item $temp -Force -ErrorAction SilentlyContinue
 }
