@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-31  
 **Branch:** `release/netlify-production`  
-**Pull request:** pending (Draft)  
+**Pull request:** https://github.com/sergio-tr/peluqueria/pull/17 (Draft)  
 **Recovery phase:** 8  
 **Status:** COMPLETE (runbook/docs); VERIFICATION blocked on operator credentials
 
