@@ -1,0 +1,24 @@
+#!/bin/sh
+# Strip automated tool co-author trailers before Conventional Commit validation.
+MSG_FILE="$1"
+SOURCE="${2:-}"
+
+if [ ! -f "$MSG_FILE" ]; then
+  exit 0
+fi
+
+node -e "
+const fs = require('fs');
+const path = process.argv[1];
+let text = fs.readFileSync(path, 'utf8');
+const cleaned = text
+  .split(/\r?\n/)
+  .filter((line) => !/co-authored-by:.*cursor/i.test(line))
+  .join('\n')
+  .replace(/\n{3,}/g, '\n\n')
+  .replace(/[ \t]+\n/g, '\n')
+  .replace(/^\n+/, '');
+if (cleaned !== text) {
+  fs.writeFileSync(path, cleaned.endsWith('\n') ? cleaned : cleaned + '\n');
+}
+" "$MSG_FILE"

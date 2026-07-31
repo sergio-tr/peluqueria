@@ -1,0 +1,31 @@
+# Secrets
+.env
+.env.local
+.env.production
+.env.development.local
+.env.test.local
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Provider/local state
+.netlify/
+supabase/.temp/
+.cursor/.local/
+.cursor/runtime/
+
+# Dependencies and generated outputs
+node_modules/
+.next/
+dist/
+build/
+coverage/
+playwright-report/
+test-results/
+blob-report/
+*.log
+
+# OS/editor
+.DS_Store
+Thumbs.db

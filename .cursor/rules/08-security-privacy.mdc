@@ -1,0 +1,19 @@
+---
+description: Reglas de seguridad, autenticación, fotografías, privacidad, tokens, PII y secretos.
+alwaysApply: false
+---
+
+# Seguridad y privacidad
+
+- No secretos en Git.
+- Sin defaults operativos para gate, admin, cron o webhook.
+- Auth admin con Supabase Auth.
+- Gate demo no equivale a auth profesional.
+- Buckets privados.
+- Validar contenido, MIME, tamaño y dimensiones.
+- Eliminar EXIF antes de persistir.
+- URLs firmadas breves y nunca en logs.
+- No exponer PII en endpoints públicos.
+- Logs estructurados con redacción.
+- Retención: 24 h, 7 días y 30 días post-cita.
+- Rate limits durables, no process-local en producción.

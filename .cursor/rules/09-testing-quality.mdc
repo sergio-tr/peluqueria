@@ -1,0 +1,16 @@
+---
+globs: src/**/*.test.*, src/**/*.spec.*, e2e/**, playwright.config.*, .github/workflows/**
+alwaysApply: false
+---
+
+# Tests y calidad
+
+- Cada cambio funcional incluye tests proporcionales al riesgo.
+- No sustituyas integration tests por mocks cuando se valida persistencia o transacción.
+- CI usa mock de IA explícito.
+- Smoke real de Replicate solo fuera de CI.
+- Verifica lint, typecheck, tests y build.
+- Pruebas de concurrencia para solapamientos.
+- Fixtures de imágenes sin datos personales.
+- Accesibilidad AA en flujo principal.
+- No elimines o debilites tests para obtener verde.

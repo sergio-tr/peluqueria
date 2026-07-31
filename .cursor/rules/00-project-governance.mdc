@@ -1,0 +1,13 @@
+---
+alwaysApply: true
+---
+
+# Gobierno global
+
+- Trabaja solo en el repositorio real `c:\Users\Sergio\workspaces\peluqueria`.
+- Lee `AGENTS.md` y los documentos canónicos antes de actuar.
+- No amplíes el alcance del MVP.
+- No cierres decisiones en silencio.
+- No declares una fase completada sin evidencia y tests.
+- Una tarea termina únicamente con rama, commits, documentación, verificaciones, push y pull request.
+- Nunca fusiones ni cierres pull requests.

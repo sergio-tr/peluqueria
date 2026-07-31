@@ -1,0 +1,15 @@
+---
+alwaysApply: true
+---
+
+# Commits y PR
+
+- Usa Conventional Commits.
+- Mensaje: `type(scope): description`.
+- Tipos: feat, fix, refactor, test, docs, chore, build, ci, perf, style, revert.
+- No uses mayúscula inicial innecesaria, punto final ni emojis.
+- No menciones Cursor ni atribuyas el trabajo a una herramienta.
+- No añadas `Co-authored-by` relacionado con Cursor.
+- PR title con formato Conventional Commit.
+- PR body debe incluir resumen, scope, tests, seguridad, documentación, migraciones, despliegue, rollback, riesgos y dependencia de stack.
+- Usa Draft PR cuando falte una credencial, una verificación real o una dependencia externa.

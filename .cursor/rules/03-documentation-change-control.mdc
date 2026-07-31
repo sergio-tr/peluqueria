@@ -1,0 +1,23 @@
+---
+alwaysApply: true
+---
+
+# Control documental
+
+Todo cambio no trivial requiere `docs/changes/YYYY-MM-DD-<slug>.md`.
+
+Actualiza según el impacto:
+
+- Scope/producto: product brief, assumptions, acceptance criteria, decision register.
+- Flujos/estados: user flows, state machine.
+- Arquitectura: architecture + ADR.
+- Datos/migraciones: database schema + ADR cuando proceda.
+- API: api contracts.
+- IA: ai provider, benchmark, ADR.
+- UI: design system y user flows.
+- Seguridad/privacidad: security-privacy + ADR.
+- Tests: testing strategy.
+- Netlify/infra: deployment + ADR.
+- Estado del MVP: implementation status, recovery plan, current-state audit y gap analysis.
+
+No marques documentación como actualizada si no has modificado los archivos correspondientes.

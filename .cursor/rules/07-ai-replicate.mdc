@@ -1,0 +1,19 @@
+---
+globs: src/**/*ai*, src/**/*replicate*, src/**/*hair*, src/app/api/webhooks/**, docs/ai-*.md
+alwaysApply: false
+---
+
+# IA y Replicate
+
+- `HairTryOnProvider` es la frontera.
+- Preview/producción: Replicate real o error fail-closed.
+- Mock solo local/CI y siempre etiquetado.
+- Nunca fallback silencioso.
+- Modelo: `qwen/qwen-image-edit-plus`, sin pin obligatorio según D-02.
+- Persistir metadata completa del job.
+- Verificar y deduplicar webhooks.
+- Copiar output a Storage propio antes de exponerlo en la fase 3C.
+- No persistir signed URLs en parámetros.
+- Presupuesto mensual: 30 €.
+- Cap mensual se decide tras coste p95.
+- No implementar Modal/HairFastGAN antes del benchmark y ADR.
