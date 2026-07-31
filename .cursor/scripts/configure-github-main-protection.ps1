@@ -36,13 +36,14 @@ $payload = @{
     allow_fork_syncing = $false
 } | ConvertTo-Json -Depth 10 -Compress
 
-$temp = New-TemporaryFile
+$temp = [System.IO.Path]::GetTempFileName()
 try {
-    Set-Content -Path $temp -Value $payload -Encoding utf8
+    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+    [System.IO.File]::WriteAllText($temp, $payload, $utf8NoBom)
     & gh api `
         --method PUT `
         -H "Accept: application/vnd.github+json" `
-        -H "X-GitHub-Api-Version: 2026-03-10" `
+        -H "X-GitHub-Api-Version: 2022-11-28" `
         "repos/$repo/branches/$Branch/protection" `
         --input $temp
 

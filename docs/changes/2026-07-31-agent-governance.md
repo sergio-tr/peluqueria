@@ -61,7 +61,7 @@ None.
 | Forbidden attribution | message containing tool name | PASS (rejected) |
 | Main guard | `guard-current-branch.mjs` on `main` | PASS (blocked) |
 | Docs gate fixture | temp non-docs commit without change record | PASS (rejected); fixture removed |
-| Branch protection script | `.cursor/scripts/configure-github-main-protection.ps1` | FAIL — GitHub HTTP 400 Problems parsing JSON; see operator-actions |
+| Branch protection script | `.cursor/scripts/configure-github-main-protection.ps1` then manual `gh api` JSON | PASS — protection enabled on `origin/main` (script JSON fixed for UTF-8 no BOM) |
 | Lint | | NOT_RUN (app toolchain out of scope) |
 | Typecheck | | NOT_RUN |
 | Tests | | NOT_RUN |
