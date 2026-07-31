@@ -1,0 +1,10 @@
+{
+  "projects": [],
+  "db": {
+    "major_version": 15
+  },
+  "seed": {
+    "enabled": true,
+    "sql_paths": ["./seed/seed.sql"]
+  }
+}
