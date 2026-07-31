@@ -2,9 +2,9 @@
 
 **Date:** 2026-07-31  
 **Branch:** `chore/agent-governance`  
-**Pull request:** pending  
+**Pull request:** https://github.com/sergio-tr/peluqueria/pull/1  
 **Recovery phase:** `0` (governance / setup)  
-**Status:** IN_PROGRESS
+**Status:** IN_REVIEW
 
 ## Summary
 
