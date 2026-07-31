@@ -1,9 +1,19 @@
+# Peluquería Nowi — Netlify (Next.js App Router)
+# Preview bootstrap: Phase 3A. Production release: Phase 8.
+# @netlify/plugin-nextjs manages publish output; do not set publish manually.
+
 [build]
   command = "npm run build"
-  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Hourly expiration — configure schedule in Netlify UI or use netlify/functions
-# Scheduled function posts to /api/cron/expire with CRON_SECRET
+[functions]
+  node_bundler = "esbuild"
+
+# Scheduled function: hourly booking expiration (Phase 2C).
+# Requires CRON_SECRET and NEXT_PUBLIC_SITE_URL in Netlify env (preview scope).
+# Verify in Netlify UI → Functions → expire-bookings after first deploy.
