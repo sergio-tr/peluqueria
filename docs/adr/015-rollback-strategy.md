@@ -10,7 +10,7 @@ Accepted (2026-07-31 — C-08)
 Rollback permitido:
 
 - previous deploy (Netlify)
-- kill switches de feature (`AI_GENERATION_ENABLED`, flags de upload, etc.)
+- kill switches de feature — **tabla canónica:** `docs/deployment.md` § *Kill switches* (`AI_GENERATION_ENABLED`, `PURGE_ENABLED`, `PHOTO_UPLOAD_ENABLED`)
 - forward corrective migrations
 - expand/contract de schema
 - backup previo a operaciones destructivas

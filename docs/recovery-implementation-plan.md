@@ -2,7 +2,7 @@
 
 **Fecha:** 2026-07-31 (revisión post-auditoría)  
 **Repo:** `c:\Users\Sergio\workspaces\peluqueria`  
-**Estado del plan:** documentado y alineado con decisiones ACCEPTED — **aún no aprobado para implementación de código**.
+**Estado del plan:** **EN EJECUCIÓN** — decisiones ACCEPTED; implementación en curso sobre la pila de ramas autónoma (PRs #1–#18 abiertos contra `main`; ver `docs/autonomous-recovery-summary.md`). Código no verificado en producción hasta merge ordenado + acciones de operador (OP-002–OP-017).
 
 **Reglas:**
 - No `DATA_STORE=memory` en producción.
@@ -42,7 +42,9 @@
 | 8 | Release | Deploy productivo |
 | 9 | Release | Smoke DoD |
 
-**Siguiente fase a implementar cuando se apruebe el plan:** **1A**.
+**Siguiente fase:** **Final** — auditoría y hardening (`fix/mvp-final-hardening`, PR pendiente). Tras merge de la pila completa: operador ejecuta OP-013–OP-017 (deploy prod + smoke DoD).
+
+**Kill switches (canónico):** tabla única en `docs/deployment.md` § *Kill switches* — `AI_GENERATION_ENABLED`, `PURGE_ENABLED`, `PHOTO_UPLOAD_ENABLED` (ADR-015 / C-08).
 
 ---
 

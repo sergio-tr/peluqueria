@@ -2,6 +2,7 @@
 
 **Fecha:** 2026-07-31  
 **Actualización:** alineado con decision-register ACCEPTED y recovery 1A–9  
+**Ejecución:** código de mitigación en pila de ramas (PRs #1–#18); gaps P0/P1 **implementados en tip** salvo verificación en URL pública — ver `docs/autonomous-recovery-summary.md`
 **Repo:** `c:\Users\Sergio\workspaces\peluqueria`  
 **Fuente:** `docs/current-state-audit.md`
 

@@ -1,7 +1,9 @@
 # Current state audit — Peluquería Nowi
 
 **Fecha de auditoría:** 2026-07-31  
-**Última actualización documental:** 2026-07-31 (alineación con decision-register ACCEPTED; recovery plan **no** aprobado para código)  
+**Última actualización documental:** 2026-07-31 (baseline pre-merge; recovery **en ejecución** en pila de ramas — ver `docs/autonomous-recovery-summary.md`)  
+
+> **Alcance de este documento:** auditoría del estado en `main` / prototipo local **antes** del merge de la pila de recovery. No describe el tip de `fix/mvp-final-hardening`. Para estado de implementación actualizado, usar `docs/implementation-status.md`.
 **Repositorio auditado:** `c:\Users\Sergio\workspaces\peluqueria`  
 **Package name:** `peluqueria-nowi`  
 
@@ -25,7 +27,7 @@
 | Infra real | Casi nula |
 | Verificada en producción | Nula |
 
-**Veredicto:** prototipo local. **No** MVP público verificable. Próxima implementación autorizable solo tras aprobar recovery: **Fase 1A**.
+**Veredicto (baseline):** prototipo local en `main`. Recovery implementado en ramas abiertas (#1–#18); **no** MVP público verificable hasta merge + deploy + smoke DoD (OP-017).
 
 ---
 
@@ -70,7 +72,7 @@
 | Cap 500 gens/mes fijo | D-04B PENDING_BENCHMARK |
 | `migrate down` como rollback | ADR-015: prohibido genérico |
 
-`implementation-status.md` sigue sobrestimando “Hecho” operativo — no reescrito en esta pasada (fuera de alcance de archivos de esta ejecución salvo los cuatro + ADRs).
+`implementation-status.md` refleja el tip de la pila de recovery (actualizado en fase final).
 
 ---
 
@@ -87,4 +89,4 @@
 
 ## Conclusión
 
-Prototipo local. Decisiones de producto cerradas en `decision-register.md`. Recovery reestructurado pendiente de aprobación para código. **No** producción preparada mientras exista runtime memory.
+Prototipo local en `main`. Decisiones cerradas en `decision-register.md`. Recovery en ejecución sobre pila de PRs; producción **no** verificada. Ver `docs/implementation-status.md` y `docs/autonomous-recovery-summary.md`.
