@@ -71,6 +71,7 @@ Total files: 82
 - `.githooks/commit-msg`
 - `.githooks/pre-commit`
 - `.githooks/pre-push`
+- `.githooks/prepare-commit-msg`
 - `.github/pull_request_template.md`
 - `.github/workflows/governance.yml`
 - `AGENTS.md`
