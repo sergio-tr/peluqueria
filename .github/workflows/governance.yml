@@ -42,7 +42,8 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          if printf '%s\n%s' "$PR_TITLE" "$PR_BODY" | grep -Eiq '\bcursor\b'; then
+          # Reject product attribution only — not filesystem paths like agent-scripts/.
+          if printf '%s\n%s' "$PR_TITLE" "$PR_BODY" | grep -Eiq 'made with[[:space:]]*\[?cursor\]?|co-authored-by:[[:space:]]*cursor\b'; then
             echo "PR metadata contains forbidden tool attribution."
             exit 1
           fi
