@@ -27,9 +27,9 @@
 | 16 | 7 E2E / a11y / CI | `test/e2e-a11y-ci` | https://github.com/sergio-tr/peluqueria/pull/16 | |
 | 17 | 8 Production runbook | `release/netlify-production` | https://github.com/sergio-tr/peluqueria/pull/17 | ✓ |
 | 18 | 9 DoD smoke checklist | `test/production-dod-smoke` | https://github.com/sergio-tr/peluqueria/pull/18 | ✓ |
-| 19 | Final hardening | `fix/mvp-final-hardening` | *(this PR)* | ✓ |
+| 19 | Final hardening | `fix/mvp-final-hardening` | https://github.com/sergio-tr/peluqueria/pull/19 | ✓ |
 
-**Total open PRs:** 18 (+ final pending push)
+**Total open PRs:** 19
 
 ## Merge order
 

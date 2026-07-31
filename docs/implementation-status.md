@@ -28,7 +28,7 @@ Autonomous recovery stack is **implemented on branch tip** (`fix/mvp-final-harde
 | 16 | 7 | `test/e2e-a11y-ci` | [#16](https://github.com/sergio-tr/peluqueria/pull/16) | COMPLETE (open) |
 | 17 | 8 | `release/netlify-production` | [#17](https://github.com/sergio-tr/peluqueria/pull/17) | COMPLETE (open) |
 | 18 | 9 | `test/production-dod-smoke` | [#18](https://github.com/sergio-tr/peluqueria/pull/18) | COMPLETE (open) |
-| 19 | Final | `fix/mvp-final-hardening` | pending | IN_PROGRESS |
+| 19 | Final | `fix/mvp-final-hardening` | [#19](https://github.com/sergio-tr/peluqueria/pull/19) | COMPLETE (open) |
 
 ## Runtime truth (tip branch)
 

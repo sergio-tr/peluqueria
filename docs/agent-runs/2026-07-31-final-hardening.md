@@ -3,7 +3,7 @@
 **Date:** 2026-07-31  
 **Branch:** `fix/mvp-final-hardening`  
 **Base:** `test/production-dod-smoke` (PR #18)  
-**PR:** pending push
+**PR:** https://github.com/sergio-tr/peluqueria/pull/19 (Draft)
 
 ## Objective
 

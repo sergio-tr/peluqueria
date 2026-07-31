@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-31  
 **Branch:** `fix/mvp-final-hardening`  
-**Pull request:** pending  
+**Pull request:** https://github.com/sergio-tr/peluqueria/pull/19 (Draft)  
 **Recovery phase:** Final  
 **Status:** COMPLETE (docs/hardening); DoD **NOT VERIFIED**
 
