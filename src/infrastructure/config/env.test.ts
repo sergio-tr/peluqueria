@@ -39,4 +39,17 @@ describe("loadConfig", () => {
     });
     expect(config.dataStore).toBe("supabase");
   });
+
+  it("loads photo upload settings from env", () => {
+    const config = loadConfig({
+      NODE_ENV: "development",
+      DATA_STORE: "memory",
+      PRIVACY_POLICY_VERSION: "2026-07-30",
+      PHOTO_UPLOAD_ENABLED: "false",
+      SUPABASE_STORAGE_BUCKET_PHOTOS: "custom-photos",
+    });
+    expect(config.privacyPolicyVersion).toBe("2026-07-30");
+    expect(config.photoUploadEnabled).toBe(false);
+    expect(config.photosBucket).toBe("custom-photos");
+  });
 });

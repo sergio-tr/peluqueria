@@ -9,6 +9,9 @@ const envSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional().or(z.literal("")),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional().or(z.literal("")),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional().or(z.literal("")),
+  PRIVACY_POLICY_VERSION: z.string().optional().or(z.literal("")),
+  PHOTO_UPLOAD_ENABLED: z.string().optional(),
+  SUPABASE_STORAGE_BUCKET_PHOTOS: z.string().optional(),
 });
 
 export type AppConfig = {
@@ -17,6 +20,9 @@ export type AppConfig = {
   supabaseUrl: string;
   supabaseServiceRoleKey: string;
   supabaseAnonKey: string;
+  privacyPolicyVersion: string;
+  photoUploadEnabled: boolean;
+  photosBucket: string;
 };
 
 export class ConfigError extends Error {
@@ -92,5 +98,8 @@ export function loadConfig(
     supabaseUrl,
     supabaseServiceRoleKey,
     supabaseAnonKey,
+    privacyPolicyVersion: raw.PRIVACY_POLICY_VERSION ?? "",
+    photoUploadEnabled: raw.PHOTO_UPLOAD_ENABLED !== "false",
+    photosBucket: raw.SUPABASE_STORAGE_BUCKET_PHOTOS ?? "photos",
   };
 }
