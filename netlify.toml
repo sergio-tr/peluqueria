@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Hourly expiration — configure schedule in Netlify UI or use netlify/functions
+# Scheduled function posts to /api/cron/expire with CRON_SECRET
