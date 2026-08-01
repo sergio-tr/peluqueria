@@ -18,8 +18,12 @@
 ## E2E (Playwright)
 
 - `AI_PROVIDER=mock` obligatorio en CI
-- Flujo: gate → foto fixture → corte → job mock → book → admin propose → inbox → confirm → agenda
-- Marca “Demostración” visible en resultados mock
+- Flujo smoke: gate → foto fixture → corte → job mock → badge **Demostración**
+- APIs de try-on interceptadas en Playwright (sin Supabase/Replicate en CI)
+- axe-core WCAG 2.1 AA en gate, privacidad y paso compare
+- Viewports desktop (`Desktop Chrome`) y mobile (`Pixel 5`)
+- Workflow `.github/workflows/ci.yml` job `e2e`; `quality` permanece en `governance.yml`
+- Flujo completo booking → admin → inbox → confirm: pendiente (requiere Supabase)
 
 ## Smoke producción
 

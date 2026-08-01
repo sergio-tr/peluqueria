@@ -13,7 +13,9 @@
     "benchmark:smoke": "node scripts/ai-benchmark/run-smoke-16.mjs",
     "benchmark:matrix": "node scripts/ai-benchmark/run-matrix-48.mjs",
     "benchmark:aggregate": "node scripts/ai-benchmark/aggregate-results.mjs",
-    "benchmark:self-test": "node scripts/ai-benchmark/aggregate-results.mjs --self-test"
+    "benchmark:self-test": "node scripts/ai-benchmark/aggregate-results.mjs --self-test",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
@@ -30,7 +32,9 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.55.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

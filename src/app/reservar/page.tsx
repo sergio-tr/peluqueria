@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import { GateForm } from "@/components/gate/gate-form";
+import { BookingForm } from "@/components/booking/booking-form";
 
-export default function AccesoPage() {
+export default function ReservarPage() {
   return (
     <Suspense fallback={<main className="p-8">Cargando…</main>}>
-      <GateForm />
+      <BookingForm />
     </Suspense>
   );
 }

@@ -1,12 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { HebraLine } from "@/components/brand/hebra-line";
 import { Button } from "@/components/ui/button";
 
+function safeNextPath(raw: string | null): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/";
+  return raw;
+}
+
 export function GateForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = safeNextPath(searchParams.get("next"));
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,7 +33,7 @@ export function GateForm() {
         setError(data.message ?? "Código incorrecto.");
         return;
       }
-      router.replace("/");
+      router.replace(nextPath);
       router.refresh();
     } catch {
       setError("No se pudo verificar el acceso.");
