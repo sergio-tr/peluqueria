@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { AppError, toErrorResponse } from "@/domain/errors";
 import { requireSupabase } from "@/infrastructure/api/require-supabase";
+import { resolveWebhookBaseUrl } from "@/infrastructure/ai/runtime-env";
 import { loadConfig } from "@/infrastructure/config/env";
 import { getAiJobById } from "@/infrastructure/persistence/repositories/ai-jobs";
 import { createPhotoPreviewUrl } from "@/infrastructure/storage/photo-storage";
@@ -26,12 +27,13 @@ export async function GET(_request: Request, { params }: Params) {
           config.resultsBucket,
           job.resultImagePath,
         );
-      } else if (job.provider === "mock") {
-        resultPreviewUrl = await createPhotoPreviewUrl(
-          supabase,
-          config.photosBucket,
-          job.sourceImagePath,
-        );
+      } else if (job.provider === "mock" && job.referenceImagePath) {
+        // Free demo: show the style reference as the "result" so before/after differs.
+        const base = resolveWebhookBaseUrl();
+        const ref = job.referenceImagePath.startsWith("/")
+          ? job.referenceImagePath
+          : `/${job.referenceImagePath}`;
+        resultPreviewUrl = `${base}${ref}`;
       }
     }
 

@@ -227,7 +227,7 @@ Copy names from `.env.example`; **never commit values**. No defaults for gate, a
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon |
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | Server-side only |
 | `SUPABASE_STORAGE_BUCKET_*` | Yes | `photos`, `results`, `hairstyles` |
-| `AI_PROVIDER` | Yes | **`replicate-qwen`** (mock forbidden on remote runtime) |
+| `AI_PROVIDER` | Yes | Free demo: `mock` + `AI_ALLOW_MOCK=true`. Paid AI: `replicate-qwen` + token |
 | `AI_GENERATION_ENABLED` | Yes | `true` for live AI (kill switch: `false`) |
 | `REPLICATE_API_TOKEN` | Yes | From Replicate account |
 | `REPLICATE_WEBHOOK_SECRET` | Yes | From Replicate dashboard |
@@ -243,7 +243,7 @@ Full list: `.env.example`.
 
 - `DATA_STORE=memory` → startup/config error in production
 - Missing `DEMO_ACCESS_CODE` / `DEMO_SESSION_SECRET` → gate returns 503; demo login fails closed
-- `AI_PROVIDER=mock` on remote runtime → `503 AI_NOT_CONFIGURED`
+- `AI_PROVIDER=mock` on remote without `AI_ALLOW_MOCK=true` → `503 AI_NOT_CONFIGURED`
 - Missing `REPLICATE_API_TOKEN` with `replicate-qwen` → `503 AI_NOT_CONFIGURED`
 
 ### HTTPS webhook and cron (production URLs)
