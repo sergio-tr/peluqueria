@@ -3,11 +3,9 @@ import { assertTransition } from "@/domain/booking-state";
 import { addHold, endsFromStart } from "@/domain/booking-holds";
 import { suggestedDurationMinutes } from "@/domain/duration";
 import { AppError } from "@/domain/errors";
-import { appendBookingEvent } from "@/infrastructure/persistence/repositories/booking-events";
+import { createBookingWithEvent } from "@/infrastructure/persistence/repositories/booking-transactions";
 import {
   getBookingById,
-  hasOverlappingBooking,
-  insertBooking,
   type CreateBookingInput,
 } from "@/infrastructure/persistence/repositories/bookings";
 import { getHairstyleById, getServiceById } from "@/infrastructure/persistence/repositories/catalog";
@@ -65,14 +63,6 @@ export async function createBookingRequest(
   const startsAt = new Date(input.startsAt);
   const endsAt = endsFromStart(startsAt, duration);
 
-  if (await hasOverlappingBooking(client, STAFF_ID, startsAt, endsAt)) {
-    throw new AppError(
-      "SLOT_UNAVAILABLE",
-      "Ese horario ya no está disponible.",
-      409,
-    );
-  }
-
   assertTransition("READY_TO_BOOK", "PENDING_BARBER_REVIEW", "client");
 
   let sourceImagePath: string | undefined;
@@ -106,11 +96,7 @@ export async function createBookingRequest(
     consentPolicyVersion: input.consentPolicyVersion,
   };
 
-  const booking = await insertBooking(client, bookingInput);
-
-  await appendBookingEvent(client, {
-    salonId: SALON_ID,
-    bookingRequestId: booking.id,
+  const booking = await createBookingWithEvent(client, bookingInput, {
     fromStatus: "READY_TO_BOOK",
     toStatus: "PENDING_BARBER_REVIEW",
     actorType: "client",
