@@ -1,0 +1,149 @@
+{
+  "dodStatus": "NOT_VERIFIED",
+  "runId": "PENDING",
+  "productionUrl": "PENDING",
+  "gitCommit": "PENDING",
+  "startedAt": "PENDING",
+  "completedAt": "PENDING",
+  "operator": "PENDING",
+  "preflight": [
+    {
+      "id": "P1",
+      "name": "GET /api/health",
+      "status": "PENDING",
+      "timestamp": "PENDING",
+      "evidence": { "notes": "PENDING", "screenshot": "PENDING" }
+    },
+    {
+      "id": "P2",
+      "name": "Gate API without cookie",
+      "status": "PENDING",
+      "timestamp": "PENDING",
+      "evidence": { "notes": "PENDING", "screenshot": "PENDING" }
+    },
+    {
+      "id": "P3",
+      "name": "Cron expire auth",
+      "status": "PENDING",
+      "timestamp": "PENDING",
+      "evidence": { "notes": "PENDING", "screenshot": "PENDING" }
+    },
+    {
+      "id": "P4",
+      "name": "Replicate webhook URL registered",
+      "status": "PENDING",
+      "timestamp": "PENDING",
+      "evidence": { "notes": "PENDING", "screenshot": "PENDING" }
+    },
+    {
+      "id": "P5",
+      "name": "AI_PROVIDER=replicate-qwen (no mock badge)",
+      "status": "PENDING",
+      "timestamp": "PENDING",
+      "evidence": { "notes": "PENDING", "screenshot": "PENDING" }
+    }
+  ],
+  "steps": [
+    {
+      "id": "01-acceso",
+      "name": "Acceso con código demo",
+      "status": "PENDING",
+      "timestamp": "PENDING",
+      "evidence": { "screenshot": "PENDING", "notes": "PENDING" },
+      "internalIds": {}
+    },
+    {
+      "id": "02-foto",
+      "name": "Fotografía (upload/capture + crop)",
+      "status": "PENDING",
+      "timestamp": "PENDING",
+      "evidence": { "screenshot": "PENDING", "notes": "PENDING" },
+      "internalIds": { "photoId": "PENDING" }
+    },
+    {
+      "id": "02b-consent",
+      "name": "Consentimiento antes de subida",
+      "status": "PENDING",
+      "timestamp": "PENDING",
+      "evidence": { "screenshot": "PENDING", "notes": "PENDING" },
+      "internalIds": {}
+    },
+    {
+      "id": "03-corte",
+      "name": "Selección de corte",
+      "status": "PENDING",
+      "timestamp": "PENDING",
+      "evidence": { "screenshot": "PENDING", "notes": "PENDING" },
+      "internalIds": { "hairstyleId": "PENDING" }
+    },
+    {
+      "id": "04-gen-real",
+      "name": "Generación Replicate real (no mock)",
+      "status": "PENDING",
+      "timestamp": "PENDING",
+      "evidence": { "screenshot": "PENDING", "notes": "PENDING" },
+      "internalIds": { "aiJobId": "PENDING" }
+    },
+    {
+      "id": "05-solicitud",
+      "name": "Solicitud de cita",
+      "status": "PENDING",
+      "timestamp": "PENDING",
+      "evidence": { "screenshot": "PENDING", "notes": "PENDING" },
+      "internalIds": { "bookingId": "PENDING" }
+    },
+    {
+      "id": "06-revision",
+      "name": "Revisión admin (auth)",
+      "status": "PENDING",
+      "timestamp": "PENDING",
+      "evidence": { "screenshot": "PENDING", "notes": "PENDING" },
+      "internalIds": {}
+    },
+    {
+      "id": "07-propuesta",
+      "name": "Propuesta / ajuste profesional",
+      "status": "PENDING",
+      "timestamp": "PENDING",
+      "evidence": { "screenshot": "PENDING", "notes": "PENDING" },
+      "internalIds": {}
+    },
+    {
+      "id": "08-demo-inbox",
+      "name": "Demo Inbox muestra enlace",
+      "status": "PENDING",
+      "timestamp": "PENDING",
+      "evidence": { "screenshot": "PENDING", "notes": "PENDING" },
+      "internalIds": { "inboxMessageId": "PENDING" }
+    },
+    {
+      "id": "09-confirm",
+      "name": "Cliente confirma vía enlace",
+      "status": "PENDING",
+      "timestamp": "PENDING",
+      "evidence": { "screenshot": "PENDING", "notes": "PENDING" },
+      "internalIds": { "confirmTokenHash": "PENDING" }
+    },
+    {
+      "id": "10-agenda-bloqueada",
+      "name": "Agenda actualizada — slot bloqueado",
+      "status": "PENDING",
+      "timestamp": "PENDING",
+      "evidence": { "screenshot": "PENDING", "notes": "PENDING" },
+      "internalIds": { "slotStart": "PENDING" }
+    },
+    {
+      "id": "11-solape-rechazado",
+      "name": "Solape rechazado",
+      "status": "PENDING",
+      "timestamp": "PENDING",
+      "evidence": { "screenshot": "PENDING", "notes": "PENDING" },
+      "internalIds": { "overlapBookingId": "PENDING" }
+    }
+  ],
+  "attestation": {
+    "operator": "PENDING",
+    "completedAt": "PENDING",
+    "notes": "PENDING"
+  }
+}

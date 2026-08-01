@@ -15,7 +15,8 @@
     "benchmark:aggregate": "node scripts/ai-benchmark/aggregate-results.mjs",
     "benchmark:self-test": "node scripts/ai-benchmark/aggregate-results.mjs --self-test",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "smoke:dod": "node scripts/production-dod-smoke/run-checklist.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

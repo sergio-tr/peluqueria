@@ -16,4 +16,8 @@
 
 ## DoD
 
-Not met. No public smoke with Replicate.
+**Status: NOT VERIFIED**
+
+- Phase 9 smoke checklist documented: `docs/dod-smoke-checklist.md`
+- Operator action OP-017 pending — no public Replicate smoke executed with evidence
+- Production not declared live until OP-017 completes and `dodStatus` is attested VERIFIED

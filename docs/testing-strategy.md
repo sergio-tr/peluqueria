@@ -28,7 +28,10 @@
 ## Smoke producción
 
 - Manual en URL pública con Replicate real
-- Checklist DoD completa
+- Checklist DoD completa: `docs/dod-smoke-checklist.md` (Phase 9)
+- Evidencia: `npm run smoke:dod -- --init` → `smoke-evidence/` (gitignored)
+- Operador: OP-017 en `docs/operator-actions.md`
+- **DoD status: NOT VERIFIED** hasta que OP-017 complete con evidencia fechada
 - No automatizar gasto de presupuesto en CI
 
 ## Benchmark

@@ -41,6 +41,9 @@ yarn-error.log*
 /benchmark-fixtures/photos/
 /benchmark-results/
 
+# Production DoD smoke evidence (screenshots — may contain PII)
+/smoke-evidence/
+
 # vercel
 .vercel
 
