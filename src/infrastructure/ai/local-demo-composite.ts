@@ -3,18 +3,14 @@ import path from "node:path";
 import sharp from "sharp";
 
 const OUTPUT_SIZE = 768;
+const HALF = Math.floor(OUTPUT_SIZE / 2);
 
-/** Stable per-slug tint so each cut looks visually distinct in the demo video. */
-function tintForSlug(slug: string): { r: number; g: number; b: number } {
-  let hash = 0;
-  for (let i = 0; i < slug.length; i += 1) {
-    hash = (hash * 31 + slug.charCodeAt(i)) >>> 0;
-  }
-  return {
-    r: 40 + (hash % 80),
-    g: 30 + ((hash >>> 8) % 70),
-    b: 25 + ((hash >>> 16) % 60),
-  };
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 export async function loadReferenceImageBuffer(
@@ -25,11 +21,22 @@ export async function loadReferenceImageBuffer(
     .replace(/^\//, "")
     .replace(/^public\//, "");
   if (relative.startsWith("hairstyles/")) {
-    const filePath = path.join(process.cwd(), "public", relative);
-    try {
-      return await readFile(filePath);
-    } catch {
-      // Fall through to HTTP fetch (e.g. Netlify without public files on disk).
+    const candidates = [
+      path.join(process.cwd(), "public", relative),
+      path.join(process.cwd(), "peluqueria", "public", relative),
+      // Prefer catalog portrait for the demo collage (clearer than ai-reference).
+      path.join(
+        process.cwd(),
+        "public",
+        relative.replace("/ai-reference.png", "/catalog.png"),
+      ),
+    ];
+    for (const filePath of candidates) {
+      try {
+        return await readFile(filePath);
+      } catch {
+        // try next
+      }
     }
   }
 
@@ -40,9 +47,21 @@ export async function loadReferenceImageBuffer(
   return Buffer.from(await response.arrayBuffer());
 }
 
+async function panel(
+  image: Buffer,
+  width: number,
+  height: number,
+): Promise<Buffer> {
+  return sharp(image)
+    .rotate()
+    .resize(width, height, { fit: "cover", position: "attention" })
+    .jpeg({ quality: 90 })
+    .toBuffer();
+}
+
 /**
- * Local demo try-on: blends the catalog hair reference onto the upper head
- * region of the source photo. Not a real generative model — labeled Demostración.
+ * Local demo "result": clear before/after collage for video recording.
+ * Left = user photo, right = selected cut catalog. Not generative AI.
  */
 export async function composeLocalDemoTryOn(options: {
   sourceImage: Buffer;
@@ -50,67 +69,50 @@ export async function composeLocalDemoTryOn(options: {
   hairstyleSlug: string;
 }): Promise<Buffer> {
   const { sourceImage, referenceImage, hairstyleSlug } = options;
-  const tint = tintForSlug(hairstyleSlug);
+  const label = hairstyleSlug.replace(/-/g, " ");
 
-  const base = await sharp(sourceImage)
-    .rotate()
-    .resize(OUTPUT_SIZE, OUTPUT_SIZE, { fit: "cover", position: "attention" })
-    .ensureAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-
-  const hair = await sharp(referenceImage)
-    .resize(OUTPUT_SIZE, Math.round(OUTPUT_SIZE * 0.55), {
-      fit: "cover",
-      position: "top",
-    })
-    .ensureAlpha()
-    .modulate({ brightness: 0.92, saturation: 1.15 })
-    .tint(tint)
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-
-  const out = Buffer.from(base.data);
-  const hairH = hair.info.height;
-  const hairW = hair.info.width;
-  const hairTop = Math.round(OUTPUT_SIZE * 0.02);
-
-  for (let y = 0; y < hairH; y += 1) {
-    const destY = hairTop + y;
-    if (destY < 0 || destY >= OUTPUT_SIZE) continue;
-    // Fade: stronger at crown, soft at face boundary.
-    const fade = 1 - y / hairH;
-    const strength = Math.pow(fade, 1.35) * 0.72;
-
-    for (let x = 0; x < hairW; x += 1) {
-      const hi = (y * hairW + x) * 4;
-      const hairA = hair.data[hi + 3]! / 255;
-      if (hairA < 0.08) continue;
-
-      // Prefer darker / more saturated pixels from the reference (hair mass).
-      const hr = hair.data[hi]!;
-      const hg = hair.data[hi + 1]!;
-      const hb = hair.data[hi + 2]!;
-      const lum = (hr + hg + hb) / (3 * 255);
-      const hairWeight = hairA * strength * (0.35 + (1 - lum) * 0.65);
-      if (hairWeight < 0.04) continue;
-
-      const di = (destY * OUTPUT_SIZE + x) * 4;
-      const mix = Math.min(0.85, hairWeight);
-      out[di] = Math.round(out[di]! * (1 - mix) + hr * mix);
-      out[di + 1] = Math.round(out[di + 1]! * (1 - mix) + hg * mix);
-      out[di + 2] = Math.round(out[di + 2]! * (1 - mix) + hb * mix);
-    }
+  // Prefer catalog portrait when reference is the hair-only overlay.
+  let styleImage = referenceImage;
+  const catalogPath = path.join(
+    process.cwd(),
+    "public",
+    "hairstyles",
+    hairstyleSlug,
+    "catalog.png",
+  );
+  try {
+    styleImage = await readFile(catalogPath);
+  } catch {
+    // keep referenceImage
   }
 
-  return sharp(out, {
-    raw: {
+  const left = await panel(sourceImage, HALF, OUTPUT_SIZE);
+  const right = await panel(styleImage, OUTPUT_SIZE - HALF, OUTPUT_SIZE);
+
+  const chrome = Buffer.from(`<svg width="${OUTPUT_SIZE}" height="${OUTPUT_SIZE}" xmlns="http://www.w3.org/2000/svg">
+  <rect x="${HALF - 2}" y="0" width="4" height="${OUTPUT_SIZE}" fill="rgba(20,16,12,0.85)"/>
+  <rect x="0" y="0" width="${HALF}" height="48" fill="rgba(20,16,12,0.72)"/>
+  <rect x="${HALF}" y="0" width="${OUTPUT_SIZE - HALF}" height="48" fill="rgba(20,16,12,0.72)"/>
+  <text x="20" y="32" fill="#f2efe8" font-family="Georgia, serif" font-size="20">Tu foto</text>
+  <text x="${HALF + 20}" y="32" fill="#f2efe8" font-family="Georgia, serif" font-size="20">${escapeXml(label)}</text>
+  <rect x="0" y="${OUTPUT_SIZE - 52}" width="${OUTPUT_SIZE}" height="52" fill="rgba(20,16,12,0.82)"/>
+  <text x="20" y="${OUTPUT_SIZE - 18}" fill="#f2efe8" font-family="Georgia, serif" font-size="18">Demostración local · sin Replicate</text>
+</svg>`);
+
+  return sharp({
+    create: {
       width: OUTPUT_SIZE,
       height: OUTPUT_SIZE,
-      channels: 4,
+      channels: 3,
+      background: { r: 24, g: 20, b: 16 },
     },
   })
-    .jpeg({ quality: 88, mozjpeg: true })
+    .composite([
+      { input: left, left: 0, top: 0 },
+      { input: right, left: HALF, top: 0 },
+      { input: chrome, left: 0, top: 0 },
+    ])
+    .jpeg({ quality: 90, mozjpeg: true })
     .toBuffer();
 }
 

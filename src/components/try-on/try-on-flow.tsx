@@ -346,21 +346,36 @@ export function TryOnFlow() {
           <div className="mt-8 space-y-4">
             {isMock ? (
               <p className="rounded-sm bg-[var(--color-sage)]/20 px-3 py-2 text-sm font-medium">
-                Demostración local — vista previa compuesta (sin Replicate). Ideal
-                para grabar el flujo; no es generación remota de IA.
+                Demostración local — collage tu foto + corte elegido (sin
+                Replicate). Para IA real del pelo: crédito en Replicate y{" "}
+                <code className="text-xs">AI_PROVIDER=replicate-hairclip</code>.
               </p>
             ) : null}
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4">
               <figure>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={localImage} alt="Original" className="w-full rounded-sm" />
-                <figcaption className="mt-2 text-sm">Original</figcaption>
+                <img
+                  src={resultUrl}
+                  alt="Resultado de la demostración"
+                  className="w-full rounded-sm"
+                />
+                <figcaption className="mt-2 text-sm">
+                  {isMock
+                    ? "Vista previa demo (foto | corte)"
+                    : "Vista previa IA"}
+                </figcaption>
               </figure>
-              <figure>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={resultUrl} alt="Resultado" className="w-full rounded-sm" />
-                <figcaption className="mt-2 text-sm">Vista previa</figcaption>
-              </figure>
+              {!isMock ? (
+                <figure>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={localImage}
+                    alt="Original"
+                    className="w-full rounded-sm"
+                  />
+                  <figcaption className="mt-2 text-sm">Original</figcaption>
+                </figure>
+              ) : null}
             </div>
             <Button
               onClick={() => {

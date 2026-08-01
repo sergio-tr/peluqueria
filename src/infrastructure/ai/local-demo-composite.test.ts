@@ -9,7 +9,7 @@ import {
 import { hairclipDescriptionForSlug } from "./hairclip-style-map";
 
 describe("local demo composite", () => {
-  it("produces a jpeg different from the source for each slug", async () => {
+  it("produces a side-by-side collage different per slug", async () => {
     const source = await sharp({
       create: {
         width: 400,
@@ -26,7 +26,7 @@ describe("local demo composite", () => {
       "public",
       "hairstyles",
       "low-fade",
-      "ai-reference.png",
+      "catalog.png",
     );
     const reference = await readFile(referencePath);
 
@@ -41,10 +41,11 @@ describe("local demo composite", () => {
       hairstyleSlug: "pompadour",
     });
 
+    const meta = await sharp(a).metadata();
+    expect(meta.width).toBe(768);
+    expect(meta.height).toBe(768);
     expect(a.byteLength).toBeGreaterThan(1000);
-    expect(b.byteLength).toBeGreaterThan(1000);
     expect(Buffer.compare(a, b)).not.toBe(0);
-    expect(Buffer.compare(a, source)).not.toBe(0);
   });
 
   it("crops the edited half of a HairCLIP side-by-side output", async () => {
