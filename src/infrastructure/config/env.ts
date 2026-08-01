@@ -12,6 +12,7 @@ const envSchema = z.object({
   PRIVACY_POLICY_VERSION: z.string().optional().or(z.literal("")),
   PHOTO_UPLOAD_ENABLED: z.string().optional(),
   SUPABASE_STORAGE_BUCKET_PHOTOS: z.string().optional(),
+  SUPABASE_STORAGE_BUCKET_RESULTS: z.string().optional(),
 });
 
 export type AppConfig = {
@@ -23,6 +24,7 @@ export type AppConfig = {
   privacyPolicyVersion: string;
   photoUploadEnabled: boolean;
   photosBucket: string;
+  resultsBucket: string;
 };
 
 export class ConfigError extends Error {
@@ -101,5 +103,6 @@ export function loadConfig(
     privacyPolicyVersion: raw.PRIVACY_POLICY_VERSION ?? "",
     photoUploadEnabled: raw.PHOTO_UPLOAD_ENABLED !== "false",
     photosBucket: raw.SUPABASE_STORAGE_BUCKET_PHOTOS ?? "photos",
+    resultsBucket: raw.SUPABASE_STORAGE_BUCKET_RESULTS ?? "results",
   };
 }

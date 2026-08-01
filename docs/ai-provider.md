@@ -38,17 +38,18 @@ Conservar identidad facial, expresión, piel, ropa, fondo; modificar solo cabell
 ```bash
 AI_MAX_GENERATIONS_PER_SESSION=3
 AI_MAX_GENERATIONS_PER_IP_DAY=10
-AI_MAX_GENERATIONS_PER_MONTH=500
 AI_MAX_CONCURRENT_PER_SESSION=1
+AI_MONTHLY_BUDGET_EUR=30
+AI_EUR_USD_RATE=1.08
 AI_ESTIMATED_COST_PER_OUTPUT_USD=0.03
 AI_GENERATION_ENABLED=true
 ```
 
-- Contadores en DB; IP → hash con secreto (`IP_HASH_SECRET`); sin IP en claro.
-- Resistentes a carrera (upsert atómico / unique + check).
+- Contadores durables en DB (`ai_usage_counters`); IP → hash con secreto (`IP_HASH_SECRET`); sin IP en claro.
+- Presupuesto mensual **30 €** (D-04A) vía coste estimado por output; cap numérico mensual **PENDING_BENCHMARK** (D-04B).
+- Alertas 70 / 90 / 100 % del presupuesto (log `[ai-budget-alert]` + hooks internos).
 - Kill switch `AI_GENERATION_ENABLED=false`.
-- Panel admin: gens mes, éxitos, fallos, coste estimado.
-- Presupuesto conceptual ~30 €/mes (500 × 0.03 USD ≈ orden de magnitud).
+- Panel admin: `GET /api/admin/ai-usage` — gens mes, éxitos, fallos, coste estimado, % presupuesto.
 
 ## Flujo async
 

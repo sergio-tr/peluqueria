@@ -1,8 +1,20 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   extractReplicateOutput,
   isTerminalAiJobStatus,
 } from "@/infrastructure/persistence/repositories/ai-jobs";
+
+const mockConfig = {
+  isProduction: false,
+  dataStore: "supabase" as const,
+  supabaseUrl: "https://example.supabase.co",
+  supabaseServiceRoleKey: "key",
+  supabaseAnonKey: "anon",
+  privacyPolicyVersion: "2026-07-30",
+  photoUploadEnabled: true,
+  photosBucket: "photos",
+  resultsBucket: "results",
+};
 
 describe("ai job webhook helpers", () => {
   it("detects terminal statuses", () => {
@@ -44,6 +56,7 @@ describe("processReplicateWebhook", () => {
 
     const result = await processReplicateWebhook(
       client as never,
+      mockConfig,
       "salon-1",
       {
         webhookId: "wh_1",
@@ -113,6 +126,7 @@ describe("processReplicateWebhook", () => {
 
     const result = await processReplicateWebhook(
       client as never,
+      mockConfig,
       "salon-1",
       {
         webhookId: "wh_2",
@@ -123,15 +137,36 @@ describe("processReplicateWebhook", () => {
     expect(result).toEqual({ ok: true, ignored: true });
   });
 
-  it("marks succeeded predictions RUNNING with pending URL (3B staging)", async () => {
+  it("persists output to storage and marks job SUCCEEDED (3C)", async () => {
     const { processReplicateWebhook } = await import(
       "@/application/ai/process-replicate-webhook"
     );
 
     const updates: Record<string, unknown>[] = [];
     const createdAt = new Date("2026-07-31T10:00:00.000Z").toISOString();
+    const pngHeader = Buffer.from([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
+    ]);
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        headers: { get: () => String(pngHeader.length) },
+        arrayBuffer: async () =>
+          pngHeader.buffer.slice(
+            pngHeader.byteOffset,
+            pngHeader.byteOffset + pngHeader.byteLength,
+          ),
+      })),
+    );
 
     const client = {
+      storage: {
+        from: () => ({
+          upload: async () => ({ error: null }),
+        }),
+      },
       from(table: string) {
         if (table === "webhook_deliveries") {
           return {
@@ -197,6 +232,7 @@ describe("processReplicateWebhook", () => {
 
     const result = await processReplicateWebhook(
       client as never,
+      mockConfig,
       "salon-1",
       {
         webhookId: "wh_3",
@@ -212,10 +248,15 @@ describe("processReplicateWebhook", () => {
 
     expect(result).toEqual({ ok: true });
     expect(updates[0]).toMatchObject({
-      status: "RUNNING",
+      status: "SUCCEEDED",
       reported_model_version: "abc123",
-      pending_result_url: "https://replicate.delivery/out.png",
+      pending_result_url: null,
       latency_ms: 5000,
     });
+    expect(updates[0]?.result_image_path).toBe(
+      "salon-1/sess/job-1-result.png",
+    );
+
+    vi.unstubAllGlobals();
   });
 });

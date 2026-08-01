@@ -6,6 +6,8 @@ import {
   updateAiJob,
 } from "@/infrastructure/persistence/repositories/ai-jobs";
 import { insertWebhookDelivery } from "@/infrastructure/persistence/repositories/webhook-deliveries";
+import type { AppConfig } from "@/infrastructure/config/env";
+import { persistReplicateOutput } from "@/application/ai/persist-replicate-output";
 
 export type ReplicateWebhookPayload = {
   id?: string;
@@ -29,6 +31,7 @@ export type ProcessReplicateWebhookResult = {
 
 export async function processReplicateWebhook(
   client: SupabaseClient,
+  config: AppConfig,
   salonId: string,
   input: ProcessReplicateWebhookInput,
 ): Promise<ProcessReplicateWebhookResult> {
@@ -69,13 +72,46 @@ export async function processReplicateWebhook(
 
   if (input.payload.status === "succeeded") {
     const outputUrl = extractReplicateOutput(input.payload.output);
-    await updateAiJob(client, salonId, job.id, {
-      status: "RUNNING",
-      reportedModelVersion:
-        input.payload.version ?? job.reportedModelVersion ?? null,
-      latencyMs,
-      pendingResultUrl: outputUrl ?? null,
-    });
+    if (!outputUrl) {
+      await updateAiJob(client, salonId, job.id, {
+        status: "FAILED",
+        errorCode: "OUTPUT_MISSING",
+        completedAt,
+        latencyMs,
+        reportedModelVersion:
+          input.payload.version ?? job.reportedModelVersion ?? null,
+        pendingResultUrl: null,
+      });
+      return { ok: true };
+    }
+
+    try {
+      const resultImagePath = await persistReplicateOutput(
+        client,
+        config,
+        job,
+        outputUrl,
+      );
+      await updateAiJob(client, salonId, job.id, {
+        status: "SUCCEEDED",
+        resultImagePath,
+        pendingResultUrl: null,
+        completedAt,
+        latencyMs,
+        reportedModelVersion:
+          input.payload.version ?? job.reportedModelVersion ?? null,
+      });
+    } catch {
+      await updateAiJob(client, salonId, job.id, {
+        status: "FAILED",
+        errorCode: "OUTPUT_PERSIST_FAILED",
+        completedAt,
+        latencyMs,
+        pendingResultUrl: outputUrl,
+        reportedModelVersion:
+          input.payload.version ?? job.reportedModelVersion ?? null,
+      });
+    }
     return { ok: true };
   }
 

@@ -5,6 +5,7 @@ import {
 } from "@/domain/ai/hair-try-on-provider";
 import { AppError } from "@/domain/errors";
 import type { AppConfig } from "@/infrastructure/config/env";
+import { enforceAiLimits } from "@/application/ai/ai-limits";
 import { getHairTryOnProvider, isMockAiProvider } from "@/infrastructure/ai/get-provider";
 import {
   parseReplicateModel,
@@ -12,15 +13,9 @@ import {
 } from "@/infrastructure/ai/runtime-env";
 import {
   getAiJobById,
-  hasActiveJobForSession,
   insertAiJob,
   updateAiJob,
 } from "@/infrastructure/persistence/repositories/ai-jobs";
-import {
-  bumpUsage,
-  dayKey,
-  monthKey,
-} from "@/infrastructure/persistence/repositories/ai-usage";
 import { getHairstyleById } from "@/infrastructure/persistence/repositories/catalog";
 import { getPhotoById } from "@/infrastructure/persistence/repositories/photos";
 import { createPhotoPreviewUrl } from "@/infrastructure/storage/photo-storage";
@@ -38,13 +33,10 @@ export async function createAiJob(
   config: AppConfig,
   input: CreateAiJobInput,
 ) {
-  if (process.env.AI_GENERATION_ENABLED === "false") {
-    throw new AppError(
-      "AI_DISABLED",
-      "La generación está temporalmente desactivada.",
-      503,
-    );
-  }
+  await enforceAiLimits(client, SALON_ID, {
+    sessionId: input.sessionId,
+    ipHash: input.ipHash,
+  });
 
   const photo = await getPhotoById(client, SALON_ID, input.photoId);
   if (!photo || photo.session_id !== input.sessionId) {
@@ -54,61 +46,6 @@ export async function createAiJob(
   const hairstyle = await getHairstyleById(client, SALON_ID, input.hairstyleId);
   if (!hairstyle) {
     throw new AppError("HAIRSTYLE_NOT_FOUND", "Corte no encontrado.", 404);
-  }
-
-  const maxSession = Number(process.env.AI_MAX_GENERATIONS_PER_SESSION ?? 3);
-  const maxIpDay = Number(process.env.AI_MAX_GENERATIONS_PER_IP_DAY ?? 10);
-  const maxMonth = Number(process.env.AI_MAX_GENERATIONS_PER_MONTH ?? 500);
-
-  if (
-    !(await bumpUsage(
-      client,
-      SALON_ID,
-      "session",
-      input.sessionId,
-      maxSession,
-      undefined,
-      input.sessionId,
-    ))
-  ) {
-    throw new AppError(
-      "SESSION_LIMIT",
-      "Has alcanzado el máximo de generaciones de esta sesión.",
-      429,
-    );
-  }
-  if (
-    !(await bumpUsage(
-      client,
-      SALON_ID,
-      "day",
-      `${dayKey()}:${input.ipHash}`,
-      maxIpDay,
-      input.ipHash,
-    ))
-  ) {
-    throw new AppError(
-      "IP_DAY_LIMIT",
-      "Se ha alcanzado el límite diario de generaciones.",
-      429,
-    );
-  }
-  if (
-    !(await bumpUsage(client, SALON_ID, "month", monthKey(), maxMonth))
-  ) {
-    throw new AppError(
-      "MONTH_LIMIT",
-      "Se ha alcanzado el presupuesto mensual de generaciones.",
-      429,
-    );
-  }
-
-  if (await hasActiveJobForSession(client, SALON_ID, input.sessionId)) {
-    throw new AppError(
-      "CONCURRENT_LIMIT",
-      "Ya hay una generación en curso en esta sesión.",
-      429,
-    );
   }
 
   const provider = getHairTryOnProvider();
@@ -141,19 +78,15 @@ export async function createAiJob(
   let reportedModelVersion: string | undefined;
 
   if (!isMock) {
-    try {
-      const created = await provider.createPrediction({
-        sourceImageUrl: sourceUrl,
-        referenceImageUrl: referenceUrl,
-        prompt,
-        webhookUrl: `${webhookBase}/api/webhooks/replicate`,
-        webhookSecret: process.env.REPLICATE_WEBHOOK_SECRET,
-      });
-      externalId = created.externalId;
-      reportedModelVersion = created.reportedModelVersion;
-    } catch (error) {
-      throw error;
-    }
+    const created = await provider.createPrediction({
+      sourceImageUrl: sourceUrl,
+      referenceImageUrl: referenceUrl,
+      prompt,
+      webhookUrl: `${webhookBase}/api/webhooks/replicate`,
+      webhookSecret: process.env.REPLICATE_WEBHOOK_SECRET,
+    });
+    externalId = created.externalId;
+    reportedModelVersion = created.reportedModelVersion;
   } else {
     const created = await provider.createPrediction({
       sourceImageUrl: sourceUrl,
@@ -207,6 +140,7 @@ export async function createAiJob(
 
 export async function retryAiJob(
   client: SupabaseClient,
+  config: AppConfig,
   jobId: string,
 ) {
   const job = await getAiJobById(client, SALON_ID, jobId);
@@ -220,9 +154,83 @@ export async function retryAiJob(
       400,
     );
   }
-  const updated = await updateAiJob(client, SALON_ID, jobId, {
-    status: "QUEUED",
-    errorCode: null,
+
+  const ipHash = job.ipHash ?? "";
+  await enforceAiLimits(client, SALON_ID, {
+    sessionId: job.sessionId,
+    ipHash,
+    skipUsageBump: true,
   });
+
+  const hairstyleId = job.inputParameters.hairstyleId;
+  if (typeof hairstyleId !== "string") {
+    throw new AppError("RETRY_NOT_ALLOWED", "Trabajo no reintentable.", 400);
+  }
+
+  const hairstyle = await getHairstyleById(client, SALON_ID, hairstyleId);
+  if (!hairstyle) {
+    throw new AppError("HAIRSTYLE_NOT_FOUND", "Corte no encontrado.", 404);
+  }
+
+  const provider = getHairTryOnProvider();
+  const isMock = isMockAiProvider();
+  const webhookBase = resolveWebhookBaseUrl();
+  const prompt =
+    typeof job.inputParameters.prompt === "string"
+      ? job.inputParameters.prompt
+      : buildHairPrompt(hairstyle.promptModifier);
+
+  const sourceUrl = await createPhotoPreviewUrl(
+    client,
+    config.photosBucket,
+    job.sourceImagePath,
+  );
+  const referencePath = hairstyle.aiReferenceImagePath.startsWith("/")
+    ? hairstyle.aiReferenceImagePath
+    : `/${hairstyle.aiReferenceImagePath}`;
+  const referenceUrl = `${webhookBase}${referencePath}`;
+
+  let externalId: string | undefined;
+  let reportedModelVersion: string | undefined;
+
+  if (!isMock) {
+    const created = await provider.createPrediction({
+      sourceImageUrl: sourceUrl,
+      referenceImageUrl: referenceUrl,
+      prompt,
+      webhookUrl: `${webhookBase}/api/webhooks/replicate`,
+      webhookSecret: process.env.REPLICATE_WEBHOOK_SECRET,
+    });
+    externalId = created.externalId;
+    reportedModelVersion = created.reportedModelVersion;
+  } else {
+    const created = await provider.createPrediction({
+      sourceImageUrl: sourceUrl,
+      referenceImageUrl: referenceUrl,
+      prompt,
+    });
+    externalId = created.externalId;
+    reportedModelVersion = created.reportedModelVersion;
+  }
+
+  const updated = await updateAiJob(client, SALON_ID, jobId, {
+    status: isMock ? "RUNNING" : "QUEUED",
+    errorCode: null,
+    resultImagePath: null,
+    pendingResultUrl: null,
+    externalPredictionId: externalId ?? null,
+    reportedModelVersion: reportedModelVersion ?? null,
+    completedAt: null,
+  });
+
+  if (isMock) {
+    setTimeout(() => {
+      void updateAiJob(client, SALON_ID, jobId, {
+        status: "SUCCEEDED",
+        completedAt: new Date(),
+      });
+    }, 1200);
+  }
+
   return { jobId: updated.id, status: updated.status };
 }
