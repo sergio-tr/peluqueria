@@ -1,18 +1,20 @@
 import type {
-  HairTryOnInput,
   HairTryOnCreateResult,
+  HairTryOnInput,
   HairTryOnProvider,
 } from "@/domain/ai/hair-try-on-provider";
 
+/** Local/CI/contingency only. Results must be labeled "Demostración" in UI. */
 export class MockHairProvider implements HairTryOnProvider {
   readonly name = "mock";
 
   async createPrediction(
-    _input: HairTryOnInput,
+    input: HairTryOnInput,
   ): Promise<HairTryOnCreateResult> {
+    void input;
     return {
-      externalId: `mock-${crypto.randomUUID()}`,
-      reportedModelVersion: "mock-v1",
+      externalId: `mock_${crypto.randomUUID()}`,
+      reportedModelVersion: "mock-1",
     };
   }
 }

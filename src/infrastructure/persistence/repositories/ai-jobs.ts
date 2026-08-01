@@ -9,15 +9,21 @@ export type AiJobRow = {
   status: AiJobStatus;
   provider: string;
   model: string;
+  model_owner: string | null;
+  model_name: string | null;
+  requested_version: string | null;
+  asset_version: string | null;
   external_prediction_id: string | null;
   reported_model_version: string | null;
   prompt_version: string;
   input_parameters_json: Record<string, unknown>;
   estimated_cost_usd: number | null;
+  latency_ms: number | null;
   error_code: string | null;
   source_image_path: string;
   reference_image_path: string;
   result_image_path: string | null;
+  pending_result_url: string | null;
   consent_policy_version: string;
   ip_hash: string | null;
   created_at: string;
@@ -32,15 +38,21 @@ export type AiJob = {
   status: AiJobStatus;
   provider: string;
   model: string;
+  modelOwner?: string;
+  modelName?: string;
+  requestedVersion?: string;
+  assetVersion?: string;
   externalPredictionId?: string;
   reportedModelVersion?: string;
   promptVersion: string;
   inputParameters: Record<string, unknown>;
   estimatedCostUsd?: number;
+  latencyMs?: number;
   errorCode?: string;
   sourceImagePath: string;
   referenceImagePath: string;
   resultImagePath?: string;
+  pendingResultUrl?: string;
   consentPolicyVersion: string;
   ipHash?: string;
   createdAt: Date;
@@ -55,6 +67,10 @@ export type CreateAiJobInput = {
   status: AiJobStatus;
   provider: string;
   model: string;
+  modelOwner?: string;
+  modelName?: string;
+  requestedVersion?: string;
+  assetVersion?: string;
   externalPredictionId?: string;
   reportedModelVersion?: string;
   promptVersion: string;
@@ -67,7 +83,7 @@ export type CreateAiJobInput = {
 };
 
 const AI_JOB_COLUMNS =
-  "id,salon_id,session_id,status,provider,model,external_prediction_id,reported_model_version,prompt_version,input_parameters_json,estimated_cost_usd,error_code,source_image_path,reference_image_path,result_image_path,consent_policy_version,ip_hash,created_at,updated_at,completed_at";
+  "id,salon_id,session_id,status,provider,model,model_owner,model_name,requested_version,asset_version,external_prediction_id,reported_model_version,prompt_version,input_parameters_json,estimated_cost_usd,latency_ms,error_code,source_image_path,reference_image_path,result_image_path,pending_result_url,consent_policy_version,ip_hash,created_at,updated_at,completed_at";
 
 export function mapAiJobRow(row: AiJobRow): AiJob {
   return {
@@ -77,15 +93,21 @@ export function mapAiJobRow(row: AiJobRow): AiJob {
     status: row.status,
     provider: row.provider,
     model: row.model,
+    modelOwner: row.model_owner ?? undefined,
+    modelName: row.model_name ?? undefined,
+    requestedVersion: row.requested_version ?? undefined,
+    assetVersion: row.asset_version ?? undefined,
     externalPredictionId: row.external_prediction_id ?? undefined,
     reportedModelVersion: row.reported_model_version ?? undefined,
     promptVersion: row.prompt_version,
     inputParameters: row.input_parameters_json ?? {},
     estimatedCostUsd: row.estimated_cost_usd ?? undefined,
+    latencyMs: row.latency_ms ?? undefined,
     errorCode: row.error_code ?? undefined,
     sourceImagePath: row.source_image_path,
     referenceImagePath: row.reference_image_path,
     resultImagePath: row.result_image_path ?? undefined,
+    pendingResultUrl: row.pending_result_url ?? undefined,
     consentPolicyVersion: row.consent_policy_version,
     ipHash: row.ip_hash ?? undefined,
     createdAt: new Date(row.created_at),
@@ -103,6 +125,10 @@ export function toAiJobInsertRow(input: CreateAiJobInput) {
     status: input.status,
     provider: input.provider,
     model: input.model,
+    model_owner: input.modelOwner ?? null,
+    model_name: input.modelName ?? null,
+    requested_version: input.requestedVersion ?? null,
+    asset_version: input.assetVersion ?? null,
     external_prediction_id: input.externalPredictionId ?? null,
     reported_model_version: input.reportedModelVersion ?? null,
     prompt_version: input.promptVersion,
@@ -145,6 +171,21 @@ export async function getAiJobById(
   return data ? mapAiJobRow(data as AiJobRow) : null;
 }
 
+export async function getAiJobByExternalPredictionId(
+  client: SupabaseClient,
+  salonId: string,
+  externalPredictionId: string,
+): Promise<AiJob | null> {
+  const { data, error } = await client
+    .from("ai_jobs")
+    .select(AI_JOB_COLUMNS)
+    .eq("salon_id", salonId)
+    .eq("external_prediction_id", externalPredictionId)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapAiJobRow(data as AiJobRow) : null;
+}
+
 export async function updateAiJob(
   client: SupabaseClient,
   salonId: string,
@@ -153,6 +194,9 @@ export async function updateAiJob(
     status?: AiJobStatus;
     errorCode?: string | null;
     resultImagePath?: string | null;
+    pendingResultUrl?: string | null;
+    reportedModelVersion?: string | null;
+    latencyMs?: number | null;
     completedAt?: Date | null;
   },
 ): Promise<AiJob> {
@@ -164,6 +208,13 @@ export async function updateAiJob(
   if (patch.resultImagePath !== undefined) {
     row.result_image_path = patch.resultImagePath;
   }
+  if (patch.pendingResultUrl !== undefined) {
+    row.pending_result_url = patch.pendingResultUrl;
+  }
+  if (patch.reportedModelVersion !== undefined) {
+    row.reported_model_version = patch.reportedModelVersion;
+  }
+  if (patch.latencyMs !== undefined) row.latency_ms = patch.latencyMs;
   if (patch.completedAt !== undefined) {
     row.completed_at = patch.completedAt
       ? patch.completedAt.toISOString()
@@ -194,4 +245,20 @@ export async function hasActiveJobForSession(
     .in("status", ["QUEUED", "RUNNING"]);
   if (error) throw error;
   return (count ?? 0) > 0;
+}
+
+export function isTerminalAiJobStatus(status: AiJobStatus): boolean {
+  return status === "SUCCEEDED" || status === "FAILED";
+}
+
+export function extractReplicateOutput(
+  output: string | string[] | null | undefined,
+): string | undefined {
+  if (typeof output === "string") {
+    return output;
+  }
+  if (Array.isArray(output) && typeof output[0] === "string") {
+    return output[0];
+  }
+  return undefined;
 }

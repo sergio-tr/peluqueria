@@ -7,6 +7,10 @@ import { AppError } from "@/domain/errors";
 import type { AppConfig } from "@/infrastructure/config/env";
 import { getHairTryOnProvider, isMockAiProvider } from "@/infrastructure/ai/get-provider";
 import {
+  parseReplicateModel,
+  resolveWebhookBaseUrl,
+} from "@/infrastructure/ai/runtime-env";
+import {
   getAiJobById,
   hasActiveJobForSession,
   insertAiJob,
@@ -109,10 +113,18 @@ export async function createAiJob(
 
   const provider = getHairTryOnProvider();
   const isMock = isMockAiProvider();
-  const model = isMock ? "mock" : (process.env.REPLICATE_MODEL ?? "qwen/qwen-image-edit-plus");
+  const model = isMock
+    ? "mock"
+    : (process.env.REPLICATE_MODEL ?? "qwen/qwen-image-edit-plus");
+  const { modelOwner, modelName } = isMock
+    ? { modelOwner: "mock", modelName: "mock" }
+    : parseReplicateModel(model);
+  const requestedVersion = isMock
+    ? undefined
+    : process.env.REPLICATE_MODEL_VERSION;
   const estimated = Number(process.env.AI_ESTIMATED_COST_PER_OUTPUT_USD ?? 0.03);
   const jobId = crypto.randomUUID();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const webhookBase = resolveWebhookBaseUrl();
   const prompt = buildHairPrompt(hairstyle.promptModifier);
 
   const sourceUrl = await createPhotoPreviewUrl(
@@ -123,7 +135,7 @@ export async function createAiJob(
   const referencePath = hairstyle.aiReferenceImagePath.startsWith("/")
     ? hairstyle.aiReferenceImagePath
     : `/${hairstyle.aiReferenceImagePath}`;
-  const referenceUrl = `${siteUrl}${referencePath}`;
+  const referenceUrl = `${webhookBase}${referencePath}`;
 
   let externalId: string | undefined;
   let reportedModelVersion: string | undefined;
@@ -134,7 +146,7 @@ export async function createAiJob(
         sourceImageUrl: sourceUrl,
         referenceImageUrl: referenceUrl,
         prompt,
-        webhookUrl: `${siteUrl}/api/webhooks/replicate`,
+        webhookUrl: `${webhookBase}/api/webhooks/replicate`,
         webhookSecret: process.env.REPLICATE_WEBHOOK_SECRET,
       });
       externalId = created.externalId;
@@ -159,6 +171,10 @@ export async function createAiJob(
     status: isMock ? "RUNNING" : "QUEUED",
     provider: provider.name,
     model,
+    modelOwner,
+    modelName,
+    requestedVersion,
+    assetVersion: hairstyle.assetVersion,
     externalPredictionId: externalId,
     reportedModelVersion,
     promptVersion: PROMPT_VERSION,
