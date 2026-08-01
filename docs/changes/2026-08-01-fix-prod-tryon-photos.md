@@ -1,69 +1,70 @@
-# Change record — Fix production try-on photo upload
+# Change record — Fix try-on photos + Replicate create
 
-**Date:** 2026-08-01  
-**Branch:** `fix/prod-tryon-photos`  
-**Pull request:** pending  
-**Recovery phase:** hotfix / production  
+**Date:** 2026-08-01
+**Branch:** `fix/prod-tryon-photos`
+**Pull request:** https://github.com/sergio-tr/peluqueria/pull/21
+**Recovery phase:** hotfix / production
 **Status:** IN_PROGRESS
 
 ## Summary
 
-Fix `/probar` photo upload 500: UI was sending JSON `imageDataUrl` while API expected multipart `image`. Align client to FormData, accept JSON data-URL as fallback, harden hairstyles load errors.
+Fix production try-on: multipart photo upload, correct Replicate API (`image` array + models endpoint), replace text-card PNG placeholders with distinct silhouette portraits, surface Replicate credit errors.
 
 ## Recovery phase
 
-Hotfix after production deploy (post Phase 8/9).
+Hotfix after production deploy.
 
 ## Scope included
 
-- `src/components/try-on/try-on-flow.tsx` multipart upload + catalog error handling
-- `src/app/api/photos/route.ts` multipart + JSON data-URL support
+- try-on FormData upload + photos API JSON fallback
+- ReplicateQwenHairProvider input contract for qwen-image-edit-plus
+- Regenerated `public/hairstyles/**` silhouette assets v1.1.0
+- Seed / attribution asset_version bump
 
 ## Scope excluded
 
-- New hairstyle generation (8 seeded styles with public PNGs already live)
-- Replicate model changes
+- Purchasing Replicate credit (operator)
+- Photoreal licensed stock (operator may replace later)
 
 ## Architecture impact
 
-None. Contract alignment between client and photo pipeline (Phase 1C).
+Provider calls `POST /v1/models/{owner}/{name}/predictions` with `input.image` as URI array.
 
 ## API impact
 
-`POST /api/photos` accepts multipart (preferred) or JSON `{ imageDataUrl }` for compatibility.
+`POST /api/photos` multipart + JSON. AI job create uses corrected Replicate payload.
 
 ## Data and migration impact
 
-None. Catalog already seeded (8 hairstyles); public assets at `/hairstyles/*/catalog.png` return 200 on production.
+No schema migration. Remote `hairstyles.asset_version` updated to `1.1.0-synthetic-silhouette`.
 
 ## Security and privacy impact
 
-Unchanged: consent + policy version still required; EXIF strip and private Storage upload unchanged.
+Unchanged consent/storage pipeline.
 
 ## Testing evidence
 
-| Check | Command | Result |
-|------|---------|--------|
-| Lint | npm run lint | PENDING |
-| Typecheck | npm run typecheck | PENDING |
-| Tests | npm test | PENDING |
-| Build | npm run build | PENDING |
+| Check | Result |
+|------|--------|
+| typecheck | PENDING |
+| lint | PENDING |
+| Replicate probe | 402 insufficient credit (payload accepted) |
 
 ## Deployment and rollback
 
-Merge to main / Netlify redeploy. Rollback: previous deploy. No migrate down.
+Merge + Netlify redeploy. Operator must add Replicate billing credit. Rollback: previous deploy.
 
 ## Documentation updated
 
+- docs/assets-attribution.md
 - This change record
 
 ## Remaining risks
 
-- Netlify must have `PRIVACY_POLICY_VERSION=2026-07-30` or upload returns 503
-- Sharp native binary on Netlify must load for image processing
+- Replicate account has no credit (402) until operator tops up
+- Silhouettes are synthetic, not photoreal
 
 ## Verification status
 
-- Catalog images live: HTTP 200
-- Hairstyles in DB: 8 rows
-- Photo upload fix: code complete; production verify after deploy
+- API validation error fixed (was 422 wrong fields)
+- Credit blocker confirmed on live token

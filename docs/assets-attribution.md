@@ -22,7 +22,7 @@ public/hairstyles/{slug}/thumbnail.png
 
 DB columns: `catalog_image_path`, `ai_reference_image_path`, `thumbnail_image_path`, `asset_version`, `provenance`, `usage_rights`.
 
-Current version: **1.0.0-synthetic-mvp**
+Current version: **1.1.0-synthetic-silhouette**
 
 ## Per-style attribution
 

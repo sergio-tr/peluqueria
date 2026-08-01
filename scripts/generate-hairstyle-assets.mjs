@@ -1,5 +1,6 @@
 /**
  * Generates synthetic demo PNG assets for catalog hairstyles (Phase 2D / D-05).
+ * Distinct silhouette portraits so the picker shows real visual differences.
  * Run: node scripts/generate-hairstyle-assets.mjs
  */
 import { mkdir, writeFile } from "node:fs/promises";
@@ -11,40 +12,114 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
 const PUBLIC = path.join(ROOT, "public");
 
-const ASSET_VERSION = "1.0.0-synthetic-mvp";
+const ASSET_VERSION = "1.1.0-synthetic-silhouette";
 
+/**
+ * Hair recipes as layered SVG snippets (viewBox 0 0 200 260).
+ * Each style must read as a different cut at thumbnail size.
+ */
 const STYLES = [
-  { slug: "low-fade", name: "Low fade", hue: 210 },
-  { slug: "mid-fade", name: "Mid fade", hue: 195 },
-  { slug: "high-fade", name: "High fade", hue: 180 },
-  { slug: "french-crop", name: "French crop", hue: 150 },
-  { slug: "buzz-cut", name: "Buzz cut", hue: 240 },
-  { slug: "pompadour", name: "Pompadour", hue: 30 },
-  { slug: "slick-back", name: "Slick back", hue: 260 },
-  { slug: "curly-crop", name: "Curly crop", hue: 320 },
+  {
+    slug: "low-fade",
+    name: "Low fade",
+    layers: `
+      <ellipse cx="100" cy="118" rx="48" ry="40" fill="#1a1410"/>
+      <path d="M52 130 Q100 105 148 130 L145 155 Q100 135 55 155 Z" fill="#2c241e"/>
+      <path d="M58 95 Q100 55 142 95 L138 125 Q100 95 62 125 Z" fill="#0f0c0a"/>
+    `,
+  },
+  {
+    slug: "mid-fade",
+    name: "Mid fade",
+    layers: `
+      <ellipse cx="100" cy="110" rx="46" ry="42" fill="#1a1410"/>
+      <path d="M54 115 Q100 85 146 115 L142 145 Q100 120 58 145 Z" fill="#2c241e"/>
+      <path d="M62 78 Q100 42 138 78 L134 112 Q100 82 66 112 Z" fill="#0f0c0a"/>
+    `,
+  },
+  {
+    slug: "high-fade",
+    name: "High fade",
+    layers: `
+      <ellipse cx="100" cy="100" rx="40" ry="36" fill="#1a1410"/>
+      <path d="M62 95 Q100 70 138 95 L132 125 Q100 100 68 125 Z" fill="#2c241e"/>
+      <ellipse cx="100" cy="78" rx="34" ry="28" fill="#0f0c0a"/>
+    `,
+  },
+  {
+    slug: "french-crop",
+    name: "French crop",
+    layers: `
+      <path d="M55 100 Q100 45 145 100 L140 118 Q100 95 60 118 Z" fill="#0f0c0a"/>
+      <rect x="58" y="100" width="84" height="28" rx="6" fill="#1a1410"/>
+      <path d="M58 118 Q100 128 142 118" fill="#2c241e"/>
+    `,
+  },
+  {
+    slug: "buzz-cut",
+    name: "Buzz cut",
+    layers: `
+      <ellipse cx="100" cy="105" rx="44" ry="38" fill="#2a221c"/>
+      <ellipse cx="100" cy="100" rx="40" ry="34" fill="#3a322c"/>
+    `,
+  },
+  {
+    slug: "pompadour",
+    name: "Pompadour",
+    layers: `
+      <path d="M55 125 Q48 70 100 28 Q155 55 148 125 L140 135 Q100 90 60 135 Z" fill="#0f0c0a"/>
+      <path d="M70 70 Q100 35 135 75 Q120 95 100 85 Q80 95 70 70 Z" fill="#1a1410"/>
+      <path d="M58 125 Q100 105 142 125 L140 145 Q100 125 60 145 Z" fill="#2c241e"/>
+    `,
+  },
+  {
+    slug: "slick-back",
+    name: "Slick back",
+    layers: `
+      <path d="M52 110 Q55 55 100 40 Q150 55 150 120 L145 130 Q100 90 55 130 Z" fill="#0f0c0a"/>
+      <path d="M60 90 Q100 55 142 95 L138 120 Q100 90 62 120 Z" fill="#1a1410"/>
+      <path d="M55 125 Q100 110 145 125 L142 148 Q100 130 58 148 Z" fill="#2c241e"/>
+    `,
+  },
+  {
+    slug: "curly-crop",
+    name: "Curly crop",
+    layers: `
+      <circle cx="70" cy="70" r="18" fill="#0f0c0a"/>
+      <circle cx="100" cy="55" r="20" fill="#0f0c0a"/>
+      <circle cx="130" cy="70" r="18" fill="#0f0c0a"/>
+      <circle cx="60" cy="95" r="16" fill="#1a1410"/>
+      <circle cx="140" cy="95" r="16" fill="#1a1410"/>
+      <circle cx="85" cy="85" r="15" fill="#1a1410"/>
+      <circle cx="115" cy="85" r="15" fill="#1a1410"/>
+      <ellipse cx="100" cy="105" rx="42" ry="30" fill="#0f0c0a"/>
+      <path d="M58 120 Q100 135 142 120" fill="#2c241e"/>
+    `,
+  },
 ];
 
 const ROLES = [
-  { key: "catalog", label: "Catalog", width: 800, height: 1000 },
-  { key: "ai-reference", label: "AI reference", width: 512, height: 512 },
-  { key: "thumbnail", label: "Thumbnail", width: 200, height: 250 },
+  { key: "catalog", width: 800, height: 1000 },
+  { key: "ai-reference", width: 768, height: 768 },
+  { key: "thumbnail", width: 320, height: 400 },
 ];
 
-function svgForStyle({ name, hue }, { label, width, height }) {
-  const bg = `hsl(${hue} 35% 22%)`;
-  const accent = `hsl(${hue} 55% 55%)`;
-  const muted = `hsl(${hue} 15% 65%)`;
-  const titleSize = width >= 512 ? 44 : 22;
-  const subSize = width >= 512 ? 22 : 11;
-  const metaSize = width >= 512 ? 16 : 9;
+function svgPortrait(style, width, height) {
+  const skin = "#d4a574";
+  const skinShadow = "#b8895c";
+  const bg = "#243040";
 
-  return `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-  <rect width="100%" height="100%" fill="${bg}"/>
-  <rect x="8" y="8" width="${width - 16}" height="${height - 16}" fill="none" stroke="${accent}" stroke-width="3" rx="12"/>
-  <text x="50%" y="38%" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-size="${titleSize}" font-weight="700">${escapeXml(name)}</text>
-  <text x="50%" y="48%" text-anchor="middle" fill="${accent}" font-family="Arial,sans-serif" font-size="${subSize}" font-weight="600">${escapeXml(label)}</text>
-  <text x="50%" y="58%" text-anchor="middle" fill="${muted}" font-family="Arial,sans-serif" font-size="${metaSize}">SYNTHETIC DEMO ASSET</text>
-  <text x="50%" y="66%" text-anchor="middle" fill="${muted}" font-family="Arial,sans-serif" font-size="${metaSize}">v${ASSET_VERSION}</text>
+  return `<svg width="${width}" height="${height}" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="260" fill="${bg}"/>
+  <rect x="82" y="175" width="36" height="52" rx="10" fill="${skinShadow}"/>
+  <ellipse cx="100" cy="148" rx="44" ry="54" fill="${skin}"/>
+  <ellipse cx="54" cy="148" rx="9" ry="15" fill="${skinShadow}"/>
+  <ellipse cx="146" cy="148" rx="9" ry="15" fill="${skinShadow}"/>
+  ${style.layers}
+  <ellipse cx="84" cy="145" rx="3.5" ry="2.2" fill="#2a221c" opacity="0.5"/>
+  <ellipse cx="116" cy="145" rx="3.5" ry="2.2" fill="#2a221c" opacity="0.5"/>
+  <path d="M88 168 Q100 176 112 168" fill="none" stroke="${skinShadow}" stroke-width="2" stroke-linecap="round"/>
+  <text x="100" y="248" text-anchor="middle" fill="#f2efe8" font-family="Georgia,serif" font-size="11">${escapeXml(style.name)}</text>
 </svg>`;
 }
 
@@ -61,7 +136,7 @@ async function generateStyle(style) {
   await mkdir(dir, { recursive: true });
 
   for (const role of ROLES) {
-    const svg = svgForStyle(style, role);
+    const svg = svgPortrait(style, role.width, role.height);
     const outPath = path.join(dir, `${role.key}.png`);
     await sharp(Buffer.from(svg)).png({ compressionLevel: 9 }).toFile(outPath);
   }
@@ -70,12 +145,12 @@ async function generateStyle(style) {
 async function main() {
   for (const style of STYLES) {
     await generateStyle(style);
-    console.log(`Generated assets for ${style.slug}`);
+    console.log(`Generated silhouette assets for ${style.slug}`);
   }
 
   const manifest = {
     assetVersion: ASSET_VERSION,
-    provenance: "synthetic-generated-mvp",
+    provenance: "synthetic-silhouette-mvp",
     usageRights: "demo-internal-only",
     generatedAt: new Date().toISOString(),
     styles: STYLES.map((s) => s.slug),
@@ -85,7 +160,7 @@ async function main() {
     `${JSON.stringify(manifest, null, 2)}\n`,
     "utf8",
   );
-  console.log("Done.");
+  console.log("Done.", ASSET_VERSION);
 }
 
 main().catch((err) => {
