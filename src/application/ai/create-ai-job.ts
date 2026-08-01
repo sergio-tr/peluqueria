@@ -6,10 +6,12 @@ import {
 import { AppError } from "@/domain/errors";
 import type { AppConfig } from "@/infrastructure/config/env";
 import { completeLocalDemoJob } from "@/application/ai/complete-local-demo-job";
+import { completeLocalHairJob } from "@/application/ai/complete-local-hair-job";
 import { enforceAiLimits } from "@/application/ai/ai-limits";
 import {
   getHairTryOnProvider,
   isDemoAiProvider,
+  isLocalHairProvider,
   resolveAiProviderKind,
 } from "@/infrastructure/ai/get-provider";
 import {
@@ -42,6 +44,15 @@ function modelMetaForProvider(isDemo: boolean) {
       modelOwner: kind,
       modelName: kind,
       requestedVersion: undefined as string | undefined,
+      estimated: 0,
+    };
+  }
+  if (kind === "local-hair") {
+    return {
+      model: process.env.LOCAL_HAIR_MODEL ?? "stabilityai/stable-diffusion-2-inpainting",
+      modelOwner: "local",
+      modelName: "sd-inpaint",
+      requestedVersion: undefined,
       estimated: 0,
     };
   }
@@ -89,6 +100,7 @@ export async function createAiJob(
 
   const provider = getHairTryOnProvider();
   const isDemo = isDemoAiProvider();
+  const isLocalHair = isLocalHairProvider();
   const meta = modelMetaForProvider(isDemo);
   const jobId = crypto.randomUUID();
   const webhookBase = resolveWebhookBaseUrl();
@@ -112,7 +124,7 @@ export async function createAiJob(
     referenceImageUrl: referenceUrl,
     prompt,
     hairstyleSlug: hairstyle.slug,
-    ...(isDemo
+    ...(isDemo || isLocalHair
       ? {}
       : {
           webhookUrl: `${webhookBase}/api/webhooks/replicate`,
@@ -126,7 +138,7 @@ export async function createAiJob(
     id: jobId,
     salonId: SALON_ID,
     sessionId: input.sessionId,
-    status: isDemo ? "RUNNING" : "QUEUED",
+    status: isDemo || isLocalHair ? "RUNNING" : "QUEUED",
     provider: provider.name,
     model: meta.model,
     modelOwner: meta.modelOwner,
@@ -157,6 +169,15 @@ export async function createAiJob(
       referenceImageUrl: referenceUrl,
       referenceImagePath: hairstyle.aiReferenceImagePath,
       hairstyleSlug: hairstyle.slug,
+    });
+  } else if (isLocalHair) {
+    await completeLocalHairJob(client, config, {
+      salonId: SALON_ID,
+      jobId,
+      sessionId: input.sessionId,
+      sourceImageUrl: sourceUrl,
+      hairstyleSlug: hairstyle.slug,
+      prompt,
     });
   }
 
@@ -204,6 +225,7 @@ export async function retryAiJob(
 
   const provider = getHairTryOnProvider();
   const isDemo = isDemoAiProvider();
+  const isLocalHair = isLocalHairProvider();
   const webhookBase = resolveWebhookBaseUrl();
   const prompt =
     typeof job.inputParameters.prompt === "string"
@@ -225,7 +247,7 @@ export async function retryAiJob(
     referenceImageUrl: referenceUrl,
     prompt,
     hairstyleSlug: hairstyle.slug,
-    ...(isDemo
+    ...(isDemo || isLocalHair
       ? {}
       : {
           webhookUrl: `${webhookBase}/api/webhooks/replicate`,
@@ -234,7 +256,7 @@ export async function retryAiJob(
   });
 
   const updated = await updateAiJob(client, SALON_ID, jobId, {
-    status: isDemo ? "RUNNING" : "QUEUED",
+    status: isDemo || isLocalHair ? "RUNNING" : "QUEUED",
     errorCode: null,
     resultImagePath: null,
     pendingResultUrl: null,
@@ -252,6 +274,15 @@ export async function retryAiJob(
       referenceImageUrl: referenceUrl,
       referenceImagePath: hairstyle.aiReferenceImagePath,
       hairstyleSlug: hairstyle.slug,
+    });
+  } else if (isLocalHair) {
+    await completeLocalHairJob(client, config, {
+      salonId: SALON_ID,
+      jobId,
+      sessionId: job.sessionId,
+      sourceImageUrl: sourceUrl,
+      hairstyleSlug: hairstyle.slug,
+      prompt,
     });
   }
 

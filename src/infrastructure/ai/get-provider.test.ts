@@ -90,6 +90,16 @@ describe("getHairTryOnProvider fail-closed", () => {
     };
     expect(getHairTryOnProvider().name).toBe("replicate-hairclip");
   });
+
+  it("returns local-hair provider in development", () => {
+    process.env = {
+      NODE_ENV: "development",
+      DATA_STORE: "memory",
+      AI_PROVIDER: "local-hair",
+      LOCAL_HAIR_URL: "http://127.0.0.1:7860",
+    };
+    expect(getHairTryOnProvider().name).toBe("local-hair");
+  });
 });
 
 describe("runtime helpers", () => {

@@ -173,7 +173,8 @@ export function TryOnFlow() {
 
   async function pollJob(id: string) {
     let delay = 800;
-    for (let i = 0; i < 40; i += 1) {
+    // Local GPU inpaint can take 30–90s on first runs.
+    for (let i = 0; i < 90; i += 1) {
       const res = await fetch(`/api/ai/jobs/${id}`);
       const data = (await res.json()) as {
         status: string;

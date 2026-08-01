@@ -1,6 +1,10 @@
 import { AppError } from "@/domain/errors";
 import type { HairTryOnProvider } from "@/domain/ai/hair-try-on-provider";
 import { HAIRCLIP_DEFAULT_VERSION } from "@/infrastructure/ai/hairclip-style-map";
+import {
+  LocalHairProvider,
+  resolveLocalHairBaseUrl,
+} from "@/infrastructure/ai/local-hair-provider";
 import { MockHairProvider } from "@/infrastructure/ai/mock-hair-provider";
 import { ReplicateHairclipProvider } from "@/infrastructure/ai/replicate-hairclip-provider";
 import { ReplicateQwenHairProvider } from "@/infrastructure/ai/replicate-qwen-hair-provider";
@@ -9,6 +13,7 @@ import { isRemoteRuntime } from "@/infrastructure/ai/runtime-env";
 export type AiProviderKind =
   | "mock"
   | "local-demo"
+  | "local-hair"
   | "replicate-hairclip"
   | "replicate-qwen";
 
@@ -17,6 +22,7 @@ function resolveAiProvider(): AiProviderKind {
   if (
     explicit === "mock" ||
     explicit === "local-demo" ||
+    explicit === "local-hair" ||
     explicit === "replicate-hairclip" ||
     explicit === "replicate-qwen"
   ) {
@@ -25,7 +31,6 @@ function resolveAiProvider(): AiProviderKind {
   if (isRemoteRuntime()) {
     return "replicate-qwen";
   }
-  // Local default: visual composite suitable for recording a demo video.
   return "local-demo";
 }
 
@@ -47,8 +52,18 @@ export function getHairTryOnProvider(): HairTryOnProvider {
         503,
       );
     }
-    // Same createPrediction stub; completion path composites in create-ai-job.
     return new MockHairProvider(provider);
+  }
+
+  if (provider === "local-hair") {
+    if (isRemoteRuntime() && process.env.AI_ALLOW_LOCAL_HAIR !== "true") {
+      throw new AppError(
+        "AI_NOT_CONFIGURED",
+        "El proveedor local-hair solo está permitido en desarrollo.",
+        503,
+      );
+    }
+    return new LocalHairProvider(resolveLocalHairBaseUrl());
   }
 
   if (provider === "replicate-hairclip") {
@@ -87,10 +102,14 @@ export function getHairTryOnProvider(): HairTryOnProvider {
   );
 }
 
-/** Offline demo providers (mock / local-demo) — UI shows Demostración. */
+/** Offline collage/mock providers — UI shows Demostración. */
 export function isDemoAiProvider(): boolean {
   const provider = resolveAiProvider();
   return provider === "mock" || provider === "local-demo";
+}
+
+export function isLocalHairProvider(): boolean {
+  return resolveAiProvider() === "local-hair";
 }
 
 /** @deprecated use isDemoAiProvider */
