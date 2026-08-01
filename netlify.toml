@@ -6,7 +6,9 @@
   command = "npm run build"
 
 [build.environment]
-  NODE_VERSION = "20"
+  # @supabase/* 2.111+ requires Node >= 22. Do NOT set NODE_ENV in Netlify UI —
+  # it makes npm skip/omit install of build tooling and breaks next build.
+  NODE_VERSION = "22"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
