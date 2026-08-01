@@ -39,7 +39,7 @@ Hash con `IP_HASH_SECRET` para contadores diarios; no IP en claro.
 |------|-------|
 | Borrador | 24 h |
 | No confirmada | 7 días |
-| Confirmada | 7 días post-cita |
+| Confirmada | **30 días post-cita** (C-07) |
 | Manual | Borrado admin |
 
 ## RLS

@@ -43,3 +43,20 @@ export async function createPhotoPreviewUrl(
 
   return data.signedUrl;
 }
+
+export async function deleteStorageObjects(
+  supabase: SupabaseClient,
+  bucket: string,
+  paths: string[],
+): Promise<void> {
+  if (paths.length === 0) return;
+  const unique = [...new Set(paths)];
+  const { error } = await supabase.storage.from(bucket).remove(unique);
+  if (error) {
+    throw new AppError(
+      "STORAGE_DELETE_FAILED",
+      "No se pudo eliminar la imagen.",
+      500,
+    );
+  }
+}
