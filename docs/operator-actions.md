@@ -10,17 +10,17 @@ Do not place secrets in this document.
 | OP-002 | 3A | Run `netlify login` and confirm CLI auth | Preview deploy and site link (`netlify init` / `netlify deploy --build`) | PENDING |
 | OP-003 | 3B | Provide Replicate token through secure environment | Real inference — set `REPLICATE_API_TOKEN` in Netlify preview scope | PENDING |
 | OP-008 | 3B | Configure Replicate webhook signing secret and callback URL | Set `REPLICATE_WEBHOOK_SECRET` (from Replicate dashboard) and `WEBHOOK_BASE_URL` or `NEXT_PUBLIC_SITE_URL` to preview HTTPS host; register webhook URL `https://<preview-host>/api/webhooks/replicate` | PENDING |
-| OP-009 | 3C | Create Supabase `results` Storage bucket (private) | AI output persistence; set `SUPABASE_STORAGE_BUCKET_RESULTS=results` in Netlify preview env | PENDING |
+| OP-009 | 3C | Create Supabase `results` Storage bucket (private) | Applied 2026-08-01: private buckets `photos`, `results`, `hairstyles` on project `gsjhvjuvzscpumgkonyl` | DONE |
 | OP-010 | 3C | Set AI budget env on preview | `AI_MONTHLY_BUDGET_EUR=30` (default); optional `AI_EUR_USD_RATE` for USD→EUR estimate | PENDING |
 | OP-004 | 3A | Create Supabase project and set preview env vars in Netlify | Remote persistence for preview (`NEXT_PUBLIC_SUPABASE_*`, `SUPABASE_SERVICE_ROLE_KEY`, `DATA_STORE=supabase`) | PENDING |
 | OP-005 | 3A | Create Netlify site, connect GitHub repo, set preview env vars | Preview HTTPS URL; see `docs/deployment.md` checklist (gate secrets, `NEXT_PUBLIC_SITE_URL`, `CRON_SECRET`) | PENDING |
-| OP-006 | 3A | Apply Supabase migrations on remote project | `npx supabase link` + `npx supabase db push`; optional controlled seed for preview | PENDING |
+| OP-006 | 3A | Apply Supabase migrations on remote project | Applied 2026-08-01 on `gsjhvjuvzscpumgkonyl` (`db push` + seed). Renamed duplicate migration version `20260731100000_staff_auth` → `20260731100500`. Admin Auth linked to seed staff. | DONE |
 | OP-007 | 3A | Run post-deploy health checklist | Verify `GET /api/health`, gate redirect, gated `GET /api/services`, cron auth — document preview URL when live | PENDING |
 | OP-011 | 5 | Verify purge cron after deploy | `POST /api/cron/purge` with `CRON_SECRET`; confirm Netlify function `purge-images` scheduled; set `PURGE_ENABLED=false` to disable | PENDING |
 | OP-012 | 6 | Run AI benchmark (smoke 16 → matrix 48) | Requires `REPLICATE_API_TOKEN`, 6 subject photos in `benchmark-fixtures/photos/`, production 2D PNG ai_reference assets (not SVG); budget ~30 EUR | PENDING |
 | OP-013 | 8 | Set production env vars in Netlify (Production scope) | Fail-closed checklist: `APP_ENV=production`, `DATA_STORE=supabase`, `AI_PROVIDER=replicate-qwen`, gate secrets (no defaults), Replicate token + webhook secret, `NEXT_PUBLIC_SITE_URL` — see `docs/deployment.md` | PENDING |
 | OP-014 | 8 | Production deploy (`netlify deploy --build --prod` or Git production branch) | After OP-013; requires OP-002 login and linked site; **do not** publish until env complete | PENDING |
-| OP-015 | 8 | Register Replicate webhook for production URL | `WEBHOOK_BASE_URL` / `NEXT_PUBLIC_SITE_URL` = production HTTPS host; register `https://<production-host>/api/webhooks/replicate` in Replicate dashboard | PENDING |
+| OP-015 | 8 | Register Replicate webhook for production URL | Account signing secret verified via API (`GET /v1/webhooks/default/secret` matches Netlify `REPLICATE_WEBHOOK_SECRET`). Callback URL is sent per prediction from app (`WEBHOOK_BASE_URL` → `/api/webhooks/replicate`); no separate Replicate dashboard registration required. | DONE |
 | OP-016 | 8 | Run production post-deploy health checklist | Health, gate, cron auth, scheduled functions `@hourly` / `@daily`; document production URL when verified — Phase 9 owns full smoke DoD | PENDING |
 | OP-017 | 9 | Run production DoD smoke checklist | Full E2E on public URL with Replicate real + Demo Inbox; fill evidence JSON; see `docs/dod-smoke-checklist.md` | PENDING |
 
