@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --config vitest.config.mts"
+    "test": "vitest run --config vitest.config.mts",
+    "generate:hairstyle-assets": "node scripts/generate-hairstyle-assets.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

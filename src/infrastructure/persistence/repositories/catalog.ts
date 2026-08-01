@@ -16,6 +16,10 @@ export type HairstyleRow = {
   name: string;
   catalog_image_path: string;
   ai_reference_image_path: string;
+  thumbnail_image_path: string;
+  asset_version: string;
+  provenance: string;
+  usage_rights: string;
   complexity: "low" | "medium" | "high";
   extra_minutes: number;
   prompt_modifier: string;
@@ -28,6 +32,10 @@ export type AvailabilityRuleRow = {
   end_local: string;
   staff_id: string;
 };
+
+function toPublicUrl(path: string): string {
+  return path.startsWith("http") ? path : `/${path.replace(/^\//, "")}`;
+}
 
 export function mapService(row: ServiceRow) {
   return {
@@ -46,30 +54,19 @@ export function mapHairstyle(row: HairstyleRow) {
     id: row.id,
     slug: row.slug,
     name: row.name,
-    catalogImageUrl: row.catalog_image_path.startsWith("http")
-      ? row.catalog_image_path
-      : `/${row.catalog_image_path.replace(/^\//, "")}`,
+    catalogImageUrl: toPublicUrl(row.catalog_image_path),
+    thumbnailUrl: toPublicUrl(row.thumbnail_image_path),
+    assetVersion: row.asset_version,
+    provenance: row.provenance,
+    usageRights: row.usage_rights,
     complexity: row.complexity,
     extraMinutes: row.extra_minutes,
     promptModifier: row.prompt_modifier,
   };
 }
 
-export async function listActiveServices(
-  client: SupabaseClient,
-  salonId: string,
-) {
-  const { data, error } = await client
-    .from("services")
-    .select(
-      "id,slug,name,price_cents,base_minutes,requires_tryon,sort_order",
-    )
-    .eq("salon_id", salonId)
-    .eq("active", true)
-    .order("sort_order");
-  if (error) throw error;
-  return (data as ServiceRow[]).map(mapService);
-}
+const HAIRSTYLE_SELECT =
+  "id,slug,name,catalog_image_path,ai_reference_image_path,thumbnail_image_path,asset_version,provenance,usage_rights,complexity,extra_minutes,prompt_modifier,sort_order";
 
 export async function listActiveHairstyles(
   client: SupabaseClient,
@@ -77,9 +74,7 @@ export async function listActiveHairstyles(
 ) {
   const { data, error } = await client
     .from("hairstyles")
-    .select(
-      "id,slug,name,catalog_image_path,ai_reference_image_path,complexity,extra_minutes,prompt_modifier,sort_order",
-    )
+    .select(HAIRSTYLE_SELECT)
     .eq("salon_id", salonId)
     .eq("active", true)
     .order("sort_order");
@@ -112,9 +107,7 @@ export async function getHairstyleById(
 ) {
   const { data, error } = await client
     .from("hairstyles")
-    .select(
-      "id,slug,name,catalog_image_path,ai_reference_image_path,complexity,extra_minutes,prompt_modifier,sort_order",
-    )
+    .select(HAIRSTYLE_SELECT)
     .eq("salon_id", salonId)
     .eq("id", hairstyleId)
     .eq("active", true)
@@ -126,6 +119,22 @@ export async function getHairstyleById(
     ...mapHairstyle(row),
     aiReferenceImagePath: row.ai_reference_image_path,
   };
+}
+
+export async function listActiveServices(
+  client: SupabaseClient,
+  salonId: string,
+) {
+  const { data, error } = await client
+    .from("services")
+    .select(
+      "id,slug,name,price_cents,base_minutes,requires_tryon,sort_order",
+    )
+    .eq("salon_id", salonId)
+    .eq("active", true)
+    .order("sort_order");
+  if (error) throw error;
+  return (data as ServiceRow[]).map(mapService);
 }
 
 export async function listAvailabilityRules(

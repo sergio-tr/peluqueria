@@ -86,7 +86,7 @@ describe("ai job insert row", () => {
       model: "qwen/qwen-image-edit-plus",
       promptVersion: "v1",
       sourceImagePath: "salon/sess/photo.jpg",
-      referenceImagePath: "hairstyles/references/low-fade.svg",
+      referenceImagePath: "hairstyles/low-fade/ai-reference.png",
       consentPolicyVersion: "2026-07-30",
     });
 
@@ -97,7 +97,7 @@ describe("ai job insert row", () => {
       status: "QUEUED",
       provider: "replicate-qwen",
       source_image_path: "salon/sess/photo.jpg",
-      reference_image_path: "hairstyles/references/low-fade.svg",
+      reference_image_path: "hairstyles/low-fade/ai-reference.png",
     });
     expect(row.external_prediction_id).toBeNull();
   });
