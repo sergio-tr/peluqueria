@@ -26,7 +26,11 @@ export async function GET(_request: Request, { params }: Params) {
           config.resultsBucket,
           job.resultImagePath,
         );
-      } else if (job.provider === "mock") {
+      } else if (
+        job.provider === "mock" ||
+        job.provider === "local-demo"
+      ) {
+        // Fallback if composite upload failed earlier.
         resultPreviewUrl = await createPhotoPreviewUrl(
           supabase,
           config.photosBucket,
@@ -35,11 +39,15 @@ export async function GET(_request: Request, { params }: Params) {
       }
     }
 
+    const isDemo =
+      job.provider === "mock" || job.provider === "local-demo";
+
     return NextResponse.json({
       id: job.id,
       status: job.status,
       provider: job.provider,
-      isMock: job.provider === "mock",
+      isMock: isDemo,
+      isDemo,
       errorCode: job.errorCode,
       resultPreviewUrl,
     });

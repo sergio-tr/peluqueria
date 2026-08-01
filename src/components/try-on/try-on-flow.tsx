@@ -173,7 +173,8 @@ export function TryOnFlow() {
 
   async function pollJob(id: string) {
     let delay = 800;
-    for (let i = 0; i < 40; i += 1) {
+    // Local GPU inpaint can take 30–90s on first runs.
+    for (let i = 0; i < 90; i += 1) {
       const res = await fetch(`/api/ai/jobs/${id}`);
       const data = (await res.json()) as {
         status: string;
@@ -346,20 +347,36 @@ export function TryOnFlow() {
           <div className="mt-8 space-y-4">
             {isMock ? (
               <p className="rounded-sm bg-[var(--color-sage)]/20 px-3 py-2 text-sm font-medium">
-                Demostración — resultado mock, no es una generación real de IA.
+                Demostración local — collage tu foto + corte elegido (sin
+                Replicate). Para IA real del pelo: crédito en Replicate y{" "}
+                <code className="text-xs">AI_PROVIDER=replicate-hairclip</code>.
               </p>
             ) : null}
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4">
               <figure>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={localImage} alt="Original" className="w-full rounded-sm" />
-                <figcaption className="mt-2 text-sm">Original</figcaption>
+                <img
+                  src={resultUrl}
+                  alt="Resultado de la demostración"
+                  className="w-full rounded-sm"
+                />
+                <figcaption className="mt-2 text-sm">
+                  {isMock
+                    ? "Vista previa demo (foto | corte)"
+                    : "Vista previa IA"}
+                </figcaption>
               </figure>
-              <figure>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={resultUrl} alt="Resultado" className="w-full rounded-sm" />
-                <figcaption className="mt-2 text-sm">Vista previa</figcaption>
-              </figure>
+              {!isMock ? (
+                <figure>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={localImage}
+                    alt="Original"
+                    className="w-full rounded-sm"
+                  />
+                  <figcaption className="mt-2 text-sm">Original</figcaption>
+                </figure>
+              ) : null}
             </div>
             <Button
               onClick={() => {

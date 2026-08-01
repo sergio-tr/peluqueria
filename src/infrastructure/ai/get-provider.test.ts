@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { AppError } from "@/domain/errors";
-import { getHairTryOnProvider, isMockAiProvider } from "./get-provider";
+import {
+  getHairTryOnProvider,
+  isDemoAiProvider,
+  isMockAiProvider,
+} from "./get-provider";
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -9,13 +13,14 @@ afterEach(() => {
 });
 
 describe("getHairTryOnProvider fail-closed", () => {
-  it("defaults to mock in local development", () => {
+  it("defaults to local-demo in local development", () => {
     process.env = {
       NODE_ENV: "development",
       DATA_STORE: "memory",
     };
+    expect(isDemoAiProvider()).toBe(true);
     expect(isMockAiProvider()).toBe(true);
-    expect(getHairTryOnProvider().name).toBe("mock");
+    expect(getHairTryOnProvider().name).toBe("local-demo");
   });
 
   it("requires replicate-qwen on remote runtime without explicit provider", () => {
@@ -25,7 +30,7 @@ describe("getHairTryOnProvider fail-closed", () => {
       NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
       SUPABASE_SERVICE_ROLE_KEY: "service-role",
     };
-    expect(isMockAiProvider()).toBe(false);
+    expect(isDemoAiProvider()).toBe(false);
     expect(() => getHairTryOnProvider()).toThrow(AppError);
     try {
       getHairTryOnProvider();
@@ -34,7 +39,7 @@ describe("getHairTryOnProvider fail-closed", () => {
     }
   });
 
-  it("rejects mock provider on remote runtime even when explicitly set", () => {
+  it("rejects mock provider on remote runtime without AI_ALLOW_MOCK", () => {
     process.env = {
       NODE_ENV: "production",
       DATA_STORE: "supabase",
@@ -50,6 +55,18 @@ describe("getHairTryOnProvider fail-closed", () => {
     }
   });
 
+  it("allows local-demo on remote when AI_ALLOW_MOCK=true", () => {
+    process.env = {
+      NODE_ENV: "production",
+      DATA_STORE: "supabase",
+      AI_PROVIDER: "local-demo",
+      AI_ALLOW_MOCK: "true",
+      NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: "service-role",
+    };
+    expect(getHairTryOnProvider().name).toBe("local-demo");
+  });
+
   it("returns replicate provider when token is configured", () => {
     process.env = {
       NODE_ENV: "production",
@@ -60,6 +77,28 @@ describe("getHairTryOnProvider fail-closed", () => {
       SUPABASE_SERVICE_ROLE_KEY: "service-role",
     };
     expect(getHairTryOnProvider().name).toBe("replicate-qwen");
+  });
+
+  it("returns hairclip provider when configured", () => {
+    process.env = {
+      NODE_ENV: "production",
+      DATA_STORE: "supabase",
+      AI_PROVIDER: "replicate-hairclip",
+      REPLICATE_API_TOKEN: "r8_test",
+      NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: "service-role",
+    };
+    expect(getHairTryOnProvider().name).toBe("replicate-hairclip");
+  });
+
+  it("returns local-hair provider in development", () => {
+    process.env = {
+      NODE_ENV: "development",
+      DATA_STORE: "memory",
+      AI_PROVIDER: "local-hair",
+      LOCAL_HAIR_URL: "http://127.0.0.1:7860",
+    };
+    expect(getHairTryOnProvider().name).toBe("local-hair");
   });
 });
 

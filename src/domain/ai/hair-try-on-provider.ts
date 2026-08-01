@@ -2,6 +2,8 @@ export type HairTryOnInput = {
   sourceImageUrl: string;
   referenceImageUrl: string;
   prompt: string;
+  /** Catalog slug — used by HairCLIP text prompts / local demo tint. */
+  hairstyleSlug?: string;
   webhookUrl?: string;
   webhookSecret?: string;
 };

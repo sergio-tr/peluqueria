@@ -1,0 +1,11 @@
+# Install torch/torchvision first via setup.ps1 (CUDA wheels), then:
+diffusers==0.32.2
+transformers==4.48.3
+accelerate==1.3.0
+safetensors==0.5.2
+fastapi==0.115.8
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+pillow==11.1.0
+numpy==2.2.2
+huggingface-hub==0.28.1

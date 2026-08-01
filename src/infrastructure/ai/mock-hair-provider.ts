@@ -6,15 +6,19 @@ import type {
 
 /** Local/CI/contingency only. Results must be labeled "Demostración" in UI. */
 export class MockHairProvider implements HairTryOnProvider {
-  readonly name = "mock";
+  readonly name: string;
+
+  constructor(name: "mock" | "local-demo" = "mock") {
+    this.name = name;
+  }
 
   async createPrediction(
     input: HairTryOnInput,
   ): Promise<HairTryOnCreateResult> {
     void input;
     return {
-      externalId: `mock_${crypto.randomUUID()}`,
-      reportedModelVersion: "mock-1",
+      externalId: `${this.name}_${crypto.randomUUID()}`,
+      reportedModelVersion: `${this.name}-1`,
     };
   }
 }

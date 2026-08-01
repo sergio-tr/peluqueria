@@ -12,7 +12,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
 const PUBLIC = path.join(ROOT, "public");
 
-const ASSET_VERSION = "1.1.0-synthetic-silhouette";
+const ASSET_VERSION = "1.2.0-hair-overlay";
 
 /**
  * Hair recipes as layered SVG snippets (viewBox 0 0 200 260).
@@ -123,6 +123,14 @@ function svgPortrait(style, width, height) {
 </svg>`;
 }
 
+/** Transparent hair-only overlay used by local-demo try-on compositing. */
+function svgHairOverlay(style, width, height) {
+  // Crop the portrait viewBox to the hair band so the overlay sits on the crown.
+  return `<svg width="${width}" height="${height}" viewBox="40 20 120 140" xmlns="http://www.w3.org/2000/svg">
+  ${style.layers}
+</svg>`;
+}
+
 function escapeXml(value) {
   return value
     .replace(/&/g, "&amp;")
@@ -136,7 +144,10 @@ async function generateStyle(style) {
   await mkdir(dir, { recursive: true });
 
   for (const role of ROLES) {
-    const svg = svgPortrait(style, role.width, role.height);
+    const svg =
+      role.key === "ai-reference"
+        ? svgHairOverlay(style, role.width, role.height)
+        : svgPortrait(style, role.width, role.height);
     const outPath = path.join(dir, `${role.key}.png`);
     await sharp(Buffer.from(svg)).png({ compressionLevel: 9 }).toFile(outPath);
   }
