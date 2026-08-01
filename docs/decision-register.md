@@ -56,7 +56,8 @@
 |-------|--------|
 | Decisión | El máximo mensual de generaciones se calcula tras medir el **coste p95**. |
 | Mientras tanto | 3 gens/sesión; 1 concurrente/sesión; límite diario configurable; kill switch; contadores durables; alertas 70 % / 90 % / 100 % del presupuesto. |
-| Estado | **PENDING_BENCHMARK** |
+| Harness (Fase 6) | Script + hook `proposeD04bMonthlyCap` listos; propuesta numérica solo tras matriz 48 live con p95 medido. |
+| Estado | **PENDING_BENCHMARK** (sin run live 48) |
 
 ---
 

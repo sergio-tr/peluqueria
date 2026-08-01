@@ -17,6 +17,7 @@ Do not place secrets in this document.
 | OP-006 | 3A | Apply Supabase migrations on remote project | `npx supabase link` + `npx supabase db push`; optional controlled seed for preview | PENDING |
 | OP-007 | 3A | Run post-deploy health checklist | Verify `GET /api/health`, gate redirect, gated `GET /api/services`, cron auth — document preview URL when live | PENDING |
 | OP-011 | 5 | Verify purge cron after deploy | `POST /api/cron/purge` with `CRON_SECRET`; confirm Netlify function `purge-images` scheduled; set `PURGE_ENABLED=false` to disable | PENDING |
+| OP-012 | 6 | Run AI benchmark (smoke 16 → matrix 48) | Requires `REPLICATE_API_TOKEN`, 6 subject photos in `benchmark-fixtures/photos/`, production 2D PNG ai_reference assets (not SVG); budget ~30 EUR | PENDING |
 
 ## OP-002 — Netlify CLI login
 
@@ -93,3 +94,37 @@ Kill switch: set `AI_GENERATION_ENABLED=false` to disable generation without red
 ## OP-010 — AI budget (Phase 3C)
 
 Default budget is **30 €/month** (`AI_MONTHLY_BUDGET_EUR=30`, D-04A). Alerts log at 70%, 90%, and 100% of budget (`[ai-budget-alert]` in function logs). Admin panel: `GET /api/admin/ai-usage` (auth required). Numeric monthly generation cap remains pending benchmark (D-04B).
+
+## OP-012 — AI benchmark (Phase 6)
+
+Prerequisites:
+
+1. Merge production 2D catalog assets (`update/catalog-production-assets`) — SVG ai_reference is invalid.
+2. Set `REPLICATE_API_TOKEN` in shell (never commit).
+3. Place 6 licensed/synthetic subject photos per `scripts/ai-benchmark/fixtures/manifest.json` under `benchmark-fixtures/photos/` (gitignored).
+4. Confirm monthly budget headroom (~30 EUR for 48 gens + smoke).
+
+```bash
+cd peluqueria
+
+# Dry-run (no token) — writes PENDING records to benchmark-results/
+npm run benchmark:smoke
+npm run benchmark:matrix
+
+# Live smoke gate (16 gens)
+export REPLICATE_API_TOKEN=<from Replicate dashboard>
+npm run benchmark:smoke
+# Note output path: benchmark-results/smoke-16-<runId>.json
+
+# Live definitive matrix (48 gens) — only after smoke passes
+npm run benchmark:matrix -- --require-smoke-pass --smoke-result benchmark-results/smoke-16-<runId>.json
+
+# After human review of outputs, fill teachable + dimensionScores in result JSON, then:
+npm run benchmark:aggregate -- benchmark-results/matrix-48-<runId>.json
+
+# Copy conclusions to docs/ai-benchmark.md; if d04b.status=PROPOSED, open ADR to close D-04B
+```
+
+Expected dry-run: all generations `status: PENDING`, `d04b.status: PENDING_BENCHMARK`.
+
+Do not commit `benchmark-results/` or subject photos.

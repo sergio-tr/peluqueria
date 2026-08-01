@@ -1,30 +1,54 @@
 # AI benchmark
 
-## Estado
+**Estado:** harness implementado (Fase 6); **ejecución live pendiente** — matriz 48 **NO ejecutada**. No declarar demo pública lista sin informe go/no-go.
 
-Pendiente de ejecución (fase 20). No declarar demo pública lista sin este informe.
+## Protocolo (ADR-016 / C-09)
 
-## Protocolo
+1. **Smoke 16** — gate temprano de sanidad (fallos estructurales, referencias inválidas). No sustituye el benchmark definitivo.
+2. Si smoke live pasa → **matriz 48** (6 fotos × 8 cortes).
+3. Ponderación: identidad 30 %; fidelidad 25 %; realismo 20 %; deformaciones 10 %; latencia 10 %; coste 5 %. Detalle en [`ai-benchmark/rubric.md`](ai-benchmark/rubric.md).
+4. AC go: **≥ 80 % enseñables** (revisión humana por generación).
 
-1. **Smoke 16 generaciones** (mínimo): frontal bien iluminada; móvil normal; corto; medio; liso; rizado; low fade; high fade; French crop; pompadour (+ completar hasta 16 con mid fade / buzz / slick / curly según fixtures).
-2. Si no hay fallos estructurales → **matriz 48** (6 fotos × 8 cortes).
-3. Ponderación: identidad 30 %, fidelidad 25 %, realismo 20 %, deformaciones 10 %, latencia 10 %, coste 5 %.
-4. AC: identidad; peinado; rostro no alterado significativamente; ropa/fondo razonables; sin deformaciones graves; latencia y coste registrados; **≥80 % enseñables**.
+## Harness
+
+| Comando | Descripción |
+|---------|-------------|
+| `npm run benchmark:smoke` | Smoke 16 — live si `REPLICATE_API_TOKEN`; si no, dry-run PENDING |
+| `npm run benchmark:matrix` | Matriz 48 — dry-run por defecto sin token |
+| `npm run benchmark:aggregate -- <result.json>` | Recalcula summary + propuesta D-04B |
+| `npm run benchmark:self-test` | Verifica agregación contra golden fixtures |
+
+Archivos:
+
+- Manifiesto: `scripts/ai-benchmark/fixtures/manifest.json`
+- Plantilla resultado: `docs/ai-benchmark/result-template.json`
+- Resultados (gitignored): `benchmark-results/`
+- Fotos sujeto (gitignored): `benchmark-fixtures/photos/`
 
 ## Fixtures
 
-Fotos sintéticas o licenciadas **fuera de Git** (o en storage privado no versionado). Nunca fotos personales reales en el repositorio.
+Fotos sintéticas o licenciadas **fuera de Git** (`benchmark-fixtures/photos/`). Nunca fotos personales reales en el repositorio. Referencias de peinado: PNG raster (assets 2D); **SVG no válido**.
 
-## Registro
+## Registro oficial
 
-| Run | Fecha | Model | Prompt ver | N | Enseñables % | Coste est. | Latencia p50/p95 | Conclusión |
-|-----|-------|-------|------------|---|--------------|------------|------------------|------------|
-| — | — | qwen/qwen-image-edit-plus | — | — | — | — | — | — |
+| Run | Fecha | Model | Prompt ver | Asset ver | N | Enseñables % | Coste p95 USD | Latencia p50/p95 ms | D-04B cap propuesto | Conclusión |
+|-----|-------|-------|------------|-----------|---|--------------|---------------|---------------------|---------------------|------------|
+| — | — | qwen/qwen-image-edit-plus | v1-2026-07-30 | — | — | — | — | — | **PENDING_BENCHMARK** | Harness only — live run pending (OP-012) |
 
 ## Prompt y parámetros
 
-Documentar aquí `prompt_version` y parámetros no sensibles usados en el run oficial.
+- `prompt_version`: `v1-2026-07-30` (`PROMPT_VERSION` en código)
+- Modelo: `qwen/qwen-image-edit-plus` (sin pin — D-02)
+- Coste estimado por output: `AI_ESTIMATED_COST_PER_OUTPUT_USD` (default 0.03)
+
+## D-04B — cap mensual numérico
+
+Permanece **PENDING_BENCHMARK** hasta que la matriz 48 live aporte `costUsdP95`. El harness calcula automáticamente:
+
+`proposedMonthlyGenCap = floor(30 EUR / p95_cost_eur_per_gen)`
+
+Ver `src/domain/ai/benchmark-d04b.ts`.
 
 ## Conclusión
 
-_TBD tras ejecución._
+_TBD tras ejecución live de matriz 48 con assets 2D de producción y revisión humana._

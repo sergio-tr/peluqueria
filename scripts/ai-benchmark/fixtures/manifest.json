@@ -1,0 +1,102 @@
+{
+  "protocolVersion": "1",
+  "model": "qwen/qwen-image-edit-plus",
+  "promptVersion": "v1-2026-07-30",
+  "assetVersion": "1.0.0-synthetic-mvp",
+  "notes": [
+    "Subject photos must live outside Git (benchmark-fixtures/photos/).",
+    "Hairstyle ai_reference paths must be raster PNG — never SVG (D-05 / ADR-016).",
+    "Use production 2D assets from update/catalog-production-assets before definitive run."
+  ],
+  "photos": [
+    {
+      "id": "photo-01",
+      "label": "frontal-well-lit-mobile",
+      "localPath": "benchmark-fixtures/photos/photo-01.jpg",
+      "tags": ["frontal", "well-lit", "mobile"]
+    },
+    {
+      "id": "photo-02",
+      "label": "frontal-indoor-soft",
+      "localPath": "benchmark-fixtures/photos/photo-02.jpg",
+      "tags": ["frontal", "indoor"]
+    },
+    {
+      "id": "photo-03",
+      "label": "short-hair-subject",
+      "localPath": "benchmark-fixtures/photos/photo-03.jpg",
+      "tags": ["corto"]
+    },
+    {
+      "id": "photo-04",
+      "label": "medium-hair-subject",
+      "localPath": "benchmark-fixtures/photos/photo-04.jpg",
+      "tags": ["medio"]
+    },
+    {
+      "id": "photo-05",
+      "label": "straight-hair-subject",
+      "localPath": "benchmark-fixtures/photos/photo-05.jpg",
+      "tags": ["liso"]
+    },
+    {
+      "id": "photo-06",
+      "label": "curly-hair-subject",
+      "localPath": "benchmark-fixtures/photos/photo-06.jpg",
+      "tags": ["rizado"]
+    }
+  ],
+  "hairstyles": [
+    {
+      "slug": "low-fade",
+      "aiReferencePath": "public/hairstyles/low-fade/ai-reference.png"
+    },
+    {
+      "slug": "mid-fade",
+      "aiReferencePath": "public/hairstyles/mid-fade/ai-reference.png"
+    },
+    {
+      "slug": "high-fade",
+      "aiReferencePath": "public/hairstyles/high-fade/ai-reference.png"
+    },
+    {
+      "slug": "french-crop",
+      "aiReferencePath": "public/hairstyles/french-crop/ai-reference.png"
+    },
+    {
+      "slug": "buzz-cut",
+      "aiReferencePath": "public/hairstyles/buzz-cut/ai-reference.png"
+    },
+    {
+      "slug": "pompadour",
+      "aiReferencePath": "public/hairstyles/pompadour/ai-reference.png"
+    },
+    {
+      "slug": "slick-back",
+      "aiReferencePath": "public/hairstyles/slick-back/ai-reference.png"
+    },
+    {
+      "slug": "curly-crop",
+      "aiReferencePath": "public/hairstyles/curly-crop/ai-reference.png"
+    }
+  ],
+  "smoke16": [
+    { "photoId": "photo-01", "hairstyleSlug": "low-fade" },
+    { "photoId": "photo-01", "hairstyleSlug": "high-fade" },
+    { "photoId": "photo-01", "hairstyleSlug": "french-crop" },
+    { "photoId": "photo-01", "hairstyleSlug": "pompadour" },
+    { "photoId": "photo-02", "hairstyleSlug": "mid-fade" },
+    { "photoId": "photo-02", "hairstyleSlug": "buzz-cut" },
+    { "photoId": "photo-02", "hairstyleSlug": "slick-back" },
+    { "photoId": "photo-02", "hairstyleSlug": "curly-crop" },
+    { "photoId": "photo-03", "hairstyleSlug": "low-fade" },
+    { "photoId": "photo-03", "hairstyleSlug": "french-crop" },
+    { "photoId": "photo-04", "hairstyleSlug": "mid-fade" },
+    { "photoId": "photo-04", "hairstyleSlug": "pompadour" },
+    { "photoId": "photo-05", "hairstyleSlug": "high-fade" },
+    { "photoId": "photo-05", "hairstyleSlug": "slick-back" },
+    { "photoId": "photo-06", "hairstyleSlug": "curly-crop" },
+    { "photoId": "photo-06", "hairstyleSlug": "buzz-cut" }
+  ],
+  "matrix48": "cartesian:photos[0..5]×hairstyles[0..7]"
+}
