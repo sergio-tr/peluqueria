@@ -10,7 +10,12 @@ import {
   insertConfirmationToken,
   invalidateTokensForBooking,
 } from "@/infrastructure/persistence/repositories/confirmation-tokens";
-import { insertDemoInboxMessage } from "@/infrastructure/persistence/repositories/demo-inbox";
+import {
+  buildProposalBodySummary,
+  PROPOSAL_INBOX_SUBJECT,
+  type NotificationPort,
+} from "@/domain/notifications/notification-port";
+import { createDemoInboxNotificationAdapter } from "@/infrastructure/notifications/demo-inbox-notification-adapter";
 import { SALON_ID } from "@/infrastructure/supabase/client";
 
 export type BarberTransitionInput = {
@@ -21,10 +26,17 @@ export type BarberTransitionInput = {
   comment?: string;
 };
 
+export type BarberTransitionDeps = {
+  notifications?: NotificationPort;
+};
+
 export async function applyBarberTransition(
   client: SupabaseClient,
   input: BarberTransitionInput,
+  deps: BarberTransitionDeps = {},
 ) {
+  const notifications =
+    deps.notifications ?? createDemoInboxNotificationAdapter(client);
   const booking = await getBookingById(client, SALON_ID, input.bookingId);
   if (!booking) {
     throw new AppError("NOT_FOUND", "Solicitud no encontrada.", 404);
@@ -90,12 +102,11 @@ export async function applyBarberTransition(
 
   const confirmPath = `/confirm/${plaintext}`;
 
-  await insertDemoInboxMessage(client, {
-    id: crypto.randomUUID(),
+  await notifications.sendProposalNotification({
     salonId: SALON_ID,
     bookingRequestId: booking.id,
-    subject: "Confirma tu cita en Peluquería Nowi",
-    bodySummary: `Propuesta lista. Duración ${duration} min.`,
+    subject: PROPOSAL_INBOX_SUBJECT,
+    bodySummary: buildProposalBodySummary(duration),
     confirmPath,
   });
 

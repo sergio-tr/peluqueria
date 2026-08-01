@@ -5,6 +5,7 @@ import {
   getConfirmationPreview,
 } from "@/application/bookings/confirm-booking";
 import { bookingConfirmedNotificationKey } from "@/domain/notification-idempotency";
+import { BOOKING_CONFIRMED_INBOX_SUBJECT } from "@/domain/notifications/notification-port";
 import { AppError } from "@/domain/errors";
 
 const SALON_ID = "a0000000-0000-4000-8000-000000000001";
@@ -109,6 +110,13 @@ function mockClient(handlers: {
   return { from, rpc } as unknown as SupabaseClient;
 }
 
+function mockNotifications() {
+  return {
+    sendProposalNotification: vi.fn().mockResolvedValue(undefined),
+    sendBookingConfirmedNotification: vi.fn().mockResolvedValue(undefined),
+  };
+}
+
 describe("confirmBookingAction", () => {
   it("returns 404 for unknown token", async () => {
     const client = mockClient({ token: null });
@@ -147,7 +155,7 @@ describe("confirmBookingAction", () => {
     ).rejects.toMatchObject({ code: "INVALID_STATE", status: 409 });
   });
 
-  it("confirms once and records notification idempotency key", async () => {
+  it("confirms once, records idempotency key, and sends final notification", async () => {
     const rpc = vi.fn().mockResolvedValue({
       data: bookingRow("CONFIRMED"),
       error: null,
@@ -159,8 +167,14 @@ describe("confirmBookingAction", () => {
       rpc,
       idempotencyInsert,
     });
+    const notifications = mockNotifications();
 
-    const result = await confirmBookingAction(client, "valid", "confirm");
+    const result = await confirmBookingAction(
+      client,
+      "valid",
+      "confirm",
+      { notifications },
+    );
     expect(result).toEqual({ status: "CONFIRMED" });
     expect(rpc).toHaveBeenCalledWith(
       "transition_booking_request_tx",
@@ -172,26 +186,41 @@ describe("confirmBookingAction", () => {
         scope: "notification",
       }),
     );
+    expect(notifications.sendBookingConfirmedNotification).toHaveBeenCalledOnce();
+    expect(notifications.sendBookingConfirmedNotification).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bookingRequestId: BOOKING_ID,
+        subject: BOOKING_CONFIRMED_INBOX_SUBJECT,
+      }),
+    );
   });
 
-  it("returns idempotent 200 on confirm replay without second transition", async () => {
+  it("returns idempotent 200 on confirm replay without second transition or notification", async () => {
     const rpc = vi.fn();
+    const notifications = mockNotifications();
     const client = mockClient({
       token: tokenRow({ used_at: "2026-07-31T14:00:00.000Z" }),
       booking: bookingRow("CONFIRMED"),
       rpc,
     });
 
-    const result = await confirmBookingAction(client, "valid", "confirm");
+    const result = await confirmBookingAction(
+      client,
+      "valid",
+      "confirm",
+      { notifications },
+    );
     expect(result).toEqual({ status: "CONFIRMED", idempotent: true });
     expect(rpc).not.toHaveBeenCalled();
+    expect(notifications.sendBookingConfirmedNotification).not.toHaveBeenCalled();
   });
 
-  it("returns idempotent 200 when idempotency key already exists", async () => {
+  it("returns idempotent 200 when idempotency key already exists without duplicate notification", async () => {
     const rpc = vi.fn();
     const idempotencyInsert = vi.fn().mockResolvedValue({
       error: { code: "23505", message: "duplicate" },
     });
+    const notifications = mockNotifications();
     const client = mockClient({
       token: tokenRow(),
       booking: bookingRow("CONFIRMED"),
@@ -199,9 +228,15 @@ describe("confirmBookingAction", () => {
       idempotencyInsert,
     });
 
-    const result = await confirmBookingAction(client, "valid", "confirm");
+    const result = await confirmBookingAction(
+      client,
+      "valid",
+      "confirm",
+      { notifications },
+    );
     expect(result).toEqual({ status: "CONFIRMED", idempotent: true });
     expect(rpc).not.toHaveBeenCalled();
+    expect(notifications.sendBookingConfirmedNotification).not.toHaveBeenCalled();
   });
 });
 

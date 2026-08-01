@@ -1,7 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { canTransition, type BookingStatus } from "@/domain/booking-state";
 import { bookingConfirmedNotificationKey } from "@/domain/notification-idempotency";
+import {
+  BOOKING_CONFIRMED_INBOX_SUBJECT,
+  buildBookingConfirmedBodySummary,
+  type NotificationPort,
+} from "@/domain/notifications/notification-port";
 import { AppError } from "@/domain/errors";
+import { createDemoInboxNotificationAdapter } from "@/infrastructure/notifications/demo-inbox-notification-adapter";
 import { transitionBookingWithEvent } from "@/infrastructure/persistence/repositories/booking-transactions";
 import { getBookingById, type BookingRequest } from "@/infrastructure/persistence/repositories/bookings";
 import {
@@ -18,6 +24,10 @@ import { SALON_ID } from "@/infrastructure/supabase/client";
 export type ConfirmBookingResult = {
   status: BookingStatus;
   idempotent?: true;
+};
+
+export type ConfirmBookingDeps = {
+  notifications?: NotificationPort;
 };
 
 function requireClientTransition(from: BookingStatus, to: BookingStatus): void {
@@ -80,7 +90,10 @@ export async function confirmBookingAction(
   client: SupabaseClient,
   token: string,
   action: "confirm" | "decline",
+  deps: ConfirmBookingDeps = {},
 ): Promise<ConfirmBookingResult> {
+  const notifications =
+    deps.notifications ?? createDemoInboxNotificationAdapter(client);
   const record = await findTokenByPlaintext(client, token);
   if (!record) {
     throw new AppError("TOKEN_INVALID", "Enlace no válido.", 404);
@@ -148,6 +161,17 @@ export async function confirmBookingAction(
         proposedEndsAt: end,
       });
       await markTokenUsed(client, record.id, now);
+
+      const duration =
+        booking.finalDurationMinutes ?? booking.suggestedDurationMinutes;
+      await notifications.sendBookingConfirmedNotification({
+        salonId: SALON_ID,
+        bookingRequestId: booking.id,
+        subject: BOOKING_CONFIRMED_INBOX_SUBJECT,
+        bodySummary: buildBookingConfirmedBodySummary(start, duration),
+        confirmPath: "/",
+      });
+
       return { status: updated.status };
     } catch (error) {
       if (error instanceof AppError && error.code === "INVALID_STATE") {
