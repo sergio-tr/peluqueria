@@ -45,8 +45,19 @@ export function TryOnFlow() {
 
   useEffect(() => {
     void fetch("/api/hairstyles")
-      .then((r) => r.json())
-      .then((d: { hairstyles: Hairstyle[] }) => setHairstyles(d.hairstyles));
+      .then(async (r) => {
+        const d = (await r.json()) as {
+          hairstyles?: Hairstyle[];
+          message?: string;
+        };
+        if (!r.ok) {
+          throw new Error(d.message ?? "No se pudo cargar el catálogo.");
+        }
+        setHairstyles(d.hairstyles ?? []);
+      })
+      .catch((e: unknown) => {
+        setError(e instanceof Error ? e.message : "No se pudo cargar el catálogo.");
+      });
   }, []);
 
   useEffect(() => {
@@ -106,15 +117,16 @@ export function TryOnFlow() {
     setBusy(true);
     setError(null);
     try {
+      const blob = await (await fetch(localImage)).blob();
+      const form = new FormData();
+      form.set("sessionId", getSessionId());
+      form.set("consentPolicyVersion", policyVersion);
+      form.set("isOwnImage", "true");
+      form.set("image", blob, "capture.jpg");
+
       const res = await fetch("/api/photos", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId: getSessionId(),
-          consentPolicyVersion: policyVersion,
-          isOwnImage: true,
-          imageDataUrl: localImage,
-        }),
+        body: form,
       });
       const data = (await res.json()) as { photoId?: string; message?: string };
       if (!res.ok) throw new Error(data.message ?? "Error al subir");
@@ -282,6 +294,12 @@ export function TryOnFlow() {
 
         {step === "style" ? (
           <div className="mt-8">
+            {hairstyles.length === 0 ? (
+              <p className="text-sm text-[var(--color-charcoal)]/75">
+                No hay cortes disponibles ahora mismo. Comprueba el acceso demo
+                y recarga la página.
+              </p>
+            ) : null}
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               {hairstyles.map((h) => (
                 <button
@@ -295,7 +313,12 @@ export function TryOnFlow() {
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={h.catalogImageUrl} alt="" aria-hidden className="aspect-[4/5] w-full object-cover" />
+                  <img
+                    src={h.catalogImageUrl}
+                    alt=""
+                    aria-hidden
+                    className="aspect-[4/5] w-full object-cover bg-[var(--color-ivory-deep)]"
+                  />
                   <span className="block p-2 text-sm">{h.name}</span>
                 </button>
               ))}
