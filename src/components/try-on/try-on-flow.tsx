@@ -346,7 +346,8 @@ export function TryOnFlow() {
           <div className="mt-8 space-y-4">
             {isMock ? (
               <p className="rounded-sm bg-[var(--color-sage)]/20 px-3 py-2 text-sm font-medium">
-                Demostración — resultado mock, no es una generación real de IA.
+                Demostración local — vista previa compuesta (sin Replicate). Ideal
+                para grabar el flujo; no es generación remota de IA.
               </p>
             ) : null}
             <div className="grid gap-4 md:grid-cols-2">

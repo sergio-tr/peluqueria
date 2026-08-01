@@ -5,12 +5,18 @@ import {
 } from "@/domain/ai/hair-try-on-provider";
 import { AppError } from "@/domain/errors";
 import type { AppConfig } from "@/infrastructure/config/env";
+import { completeLocalDemoJob } from "@/application/ai/complete-local-demo-job";
 import { enforceAiLimits } from "@/application/ai/ai-limits";
-import { getHairTryOnProvider, isMockAiProvider } from "@/infrastructure/ai/get-provider";
+import {
+  getHairTryOnProvider,
+  isDemoAiProvider,
+  resolveAiProviderKind,
+} from "@/infrastructure/ai/get-provider";
 import {
   parseReplicateModel,
   resolveWebhookBaseUrl,
 } from "@/infrastructure/ai/runtime-env";
+import { HAIRCLIP_MODEL } from "@/infrastructure/ai/hairclip-style-map";
 import {
   getAiJobById,
   insertAiJob,
@@ -27,6 +33,39 @@ export type CreateAiJobInput = {
   hairstyleId: string;
   ipHash: string;
 };
+
+function modelMetaForProvider(isDemo: boolean) {
+  const kind = resolveAiProviderKind();
+  if (isDemo) {
+    return {
+      model: kind,
+      modelOwner: kind,
+      modelName: kind,
+      requestedVersion: undefined as string | undefined,
+      estimated: 0,
+    };
+  }
+  if (kind === "replicate-hairclip") {
+    return {
+      model: HAIRCLIP_MODEL,
+      modelOwner: "wty-ustc",
+      modelName: "hairclip",
+      requestedVersion:
+        process.env.REPLICATE_MODEL_VERSION ??
+        undefined,
+      estimated: Number(process.env.AI_ESTIMATED_COST_PER_OUTPUT_USD ?? 0.05),
+    };
+  }
+  const model = process.env.REPLICATE_MODEL ?? "qwen/qwen-image-edit-plus";
+  const { modelOwner, modelName } = parseReplicateModel(model);
+  return {
+    model,
+    modelOwner,
+    modelName,
+    requestedVersion: process.env.REPLICATE_MODEL_VERSION,
+    estimated: Number(process.env.AI_ESTIMATED_COST_PER_OUTPUT_USD ?? 0.03),
+  };
+}
 
 export async function createAiJob(
   client: SupabaseClient,
@@ -49,17 +88,8 @@ export async function createAiJob(
   }
 
   const provider = getHairTryOnProvider();
-  const isMock = isMockAiProvider();
-  const model = isMock
-    ? "mock"
-    : (process.env.REPLICATE_MODEL ?? "qwen/qwen-image-edit-plus");
-  const { modelOwner, modelName } = isMock
-    ? { modelOwner: "mock", modelName: "mock" }
-    : parseReplicateModel(model);
-  const requestedVersion = isMock
-    ? undefined
-    : process.env.REPLICATE_MODEL_VERSION;
-  const estimated = Number(process.env.AI_ESTIMATED_COST_PER_OUTPUT_USD ?? 0.03);
+  const isDemo = isDemoAiProvider();
+  const meta = modelMetaForProvider(isDemo);
   const jobId = crypto.randomUUID();
   const webhookBase = resolveWebhookBaseUrl();
   const prompt = buildHairPrompt(hairstyle.promptModifier);
@@ -77,64 +107,64 @@ export async function createAiJob(
   let externalId: string | undefined;
   let reportedModelVersion: string | undefined;
 
-  if (!isMock) {
-    const created = await provider.createPrediction({
-      sourceImageUrl: sourceUrl,
-      referenceImageUrl: referenceUrl,
-      prompt,
-      webhookUrl: `${webhookBase}/api/webhooks/replicate`,
-      webhookSecret: process.env.REPLICATE_WEBHOOK_SECRET,
-    });
-    externalId = created.externalId;
-    reportedModelVersion = created.reportedModelVersion;
-  } else {
-    const created = await provider.createPrediction({
-      sourceImageUrl: sourceUrl,
-      referenceImageUrl: referenceUrl,
-      prompt,
-    });
-    externalId = created.externalId;
-    reportedModelVersion = created.reportedModelVersion;
-  }
+  const created = await provider.createPrediction({
+    sourceImageUrl: sourceUrl,
+    referenceImageUrl: referenceUrl,
+    prompt,
+    hairstyleSlug: hairstyle.slug,
+    ...(isDemo
+      ? {}
+      : {
+          webhookUrl: `${webhookBase}/api/webhooks/replicate`,
+          webhookSecret: process.env.REPLICATE_WEBHOOK_SECRET,
+        }),
+  });
+  externalId = created.externalId;
+  reportedModelVersion = created.reportedModelVersion;
 
   const job = await insertAiJob(client, {
     id: jobId,
     salonId: SALON_ID,
     sessionId: input.sessionId,
-    status: isMock ? "RUNNING" : "QUEUED",
+    status: isDemo ? "RUNNING" : "QUEUED",
     provider: provider.name,
-    model,
-    modelOwner,
-    modelName,
-    requestedVersion,
+    model: meta.model,
+    modelOwner: meta.modelOwner,
+    modelName: meta.modelName,
+    requestedVersion: meta.requestedVersion,
     assetVersion: hairstyle.assetVersion,
     externalPredictionId: externalId,
     reportedModelVersion,
     promptVersion: PROMPT_VERSION,
     inputParameters: {
       hairstyleId: hairstyle.id,
+      hairstyleSlug: hairstyle.slug,
       prompt,
     },
-    estimatedCostUsd: estimated,
+    estimatedCostUsd: meta.estimated,
     sourceImagePath: photo.storage_path,
     referenceImagePath: hairstyle.aiReferenceImagePath,
     consentPolicyVersion: photo.consent_policy_version,
     ipHash: input.ipHash,
   });
 
-  if (isMock) {
-    setTimeout(() => {
-      void updateAiJob(client, SALON_ID, jobId, {
-        status: "SUCCEEDED",
-        completedAt: new Date(),
-      });
-    }, 1200);
+  if (isDemo) {
+    await completeLocalDemoJob(client, config, {
+      salonId: SALON_ID,
+      jobId,
+      sessionId: input.sessionId,
+      sourceImageUrl: sourceUrl,
+      referenceImageUrl: referenceUrl,
+      referenceImagePath: hairstyle.aiReferenceImagePath,
+      hairstyleSlug: hairstyle.slug,
+    });
   }
 
   return {
     jobId: job.id,
     provider: job.provider,
-    isMock,
+    isMock: isDemo,
+    isDemo,
   };
 }
 
@@ -173,7 +203,7 @@ export async function retryAiJob(
   }
 
   const provider = getHairTryOnProvider();
-  const isMock = isMockAiProvider();
+  const isDemo = isDemoAiProvider();
   const webhookBase = resolveWebhookBaseUrl();
   const prompt =
     typeof job.inputParameters.prompt === "string"
@@ -190,46 +220,39 @@ export async function retryAiJob(
     : `/${hairstyle.aiReferenceImagePath}`;
   const referenceUrl = `${webhookBase}${referencePath}`;
 
-  let externalId: string | undefined;
-  let reportedModelVersion: string | undefined;
-
-  if (!isMock) {
-    const created = await provider.createPrediction({
-      sourceImageUrl: sourceUrl,
-      referenceImageUrl: referenceUrl,
-      prompt,
-      webhookUrl: `${webhookBase}/api/webhooks/replicate`,
-      webhookSecret: process.env.REPLICATE_WEBHOOK_SECRET,
-    });
-    externalId = created.externalId;
-    reportedModelVersion = created.reportedModelVersion;
-  } else {
-    const created = await provider.createPrediction({
-      sourceImageUrl: sourceUrl,
-      referenceImageUrl: referenceUrl,
-      prompt,
-    });
-    externalId = created.externalId;
-    reportedModelVersion = created.reportedModelVersion;
-  }
+  const created = await provider.createPrediction({
+    sourceImageUrl: sourceUrl,
+    referenceImageUrl: referenceUrl,
+    prompt,
+    hairstyleSlug: hairstyle.slug,
+    ...(isDemo
+      ? {}
+      : {
+          webhookUrl: `${webhookBase}/api/webhooks/replicate`,
+          webhookSecret: process.env.REPLICATE_WEBHOOK_SECRET,
+        }),
+  });
 
   const updated = await updateAiJob(client, SALON_ID, jobId, {
-    status: isMock ? "RUNNING" : "QUEUED",
+    status: isDemo ? "RUNNING" : "QUEUED",
     errorCode: null,
     resultImagePath: null,
     pendingResultUrl: null,
-    externalPredictionId: externalId ?? null,
-    reportedModelVersion: reportedModelVersion ?? null,
+    externalPredictionId: created.externalId ?? null,
+    reportedModelVersion: created.reportedModelVersion ?? null,
     completedAt: null,
   });
 
-  if (isMock) {
-    setTimeout(() => {
-      void updateAiJob(client, SALON_ID, jobId, {
-        status: "SUCCEEDED",
-        completedAt: new Date(),
-      });
-    }, 1200);
+  if (isDemo) {
+    await completeLocalDemoJob(client, config, {
+      salonId: SALON_ID,
+      jobId,
+      sessionId: job.sessionId,
+      sourceImageUrl: sourceUrl,
+      referenceImageUrl: referenceUrl,
+      referenceImagePath: hairstyle.aiReferenceImagePath,
+      hairstyleSlug: hairstyle.slug,
+    });
   }
 
   return { jobId: updated.id, status: updated.status };

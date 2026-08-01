@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { AppError } from "@/domain/errors";
 import type { AppConfig } from "@/infrastructure/config/env";
+import { cropHairclipEditedHalf } from "@/infrastructure/ai/local-demo-composite";
 import type { AiJob } from "@/infrastructure/persistence/repositories/ai-jobs";
 import { validateImageContent } from "@/infrastructure/photos/detect-mime";
 import { MAX_UPLOAD_BYTES } from "@/infrastructure/photos/constants";
@@ -60,7 +61,10 @@ export async function persistReplicateOutput(
   job: AiJob,
   outputUrl: string,
 ): Promise<string> {
-  const buffer = await downloadReplicateOutput(outputUrl);
+  let buffer = await downloadReplicateOutput(outputUrl);
+  if (job.provider === "replicate-hairclip") {
+    buffer = await cropHairclipEditedHalf(buffer);
+  }
   const detected = validateImageContent(
     buffer,
     undefined,
