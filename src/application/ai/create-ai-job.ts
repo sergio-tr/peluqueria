@@ -123,12 +123,11 @@ export async function createAiJob(
   });
 
   if (isMock) {
-    setTimeout(() => {
-      void updateAiJob(client, SALON_ID, jobId, {
-        status: "SUCCEEDED",
-        completedAt: new Date(),
-      });
-    }, 1200);
+    // Complete synchronously — serverless timers are unreliable.
+    await updateAiJob(client, SALON_ID, jobId, {
+      status: "SUCCEEDED",
+      completedAt: new Date(),
+    });
   }
 
   return {
@@ -214,23 +213,14 @@ export async function retryAiJob(
   }
 
   const updated = await updateAiJob(client, SALON_ID, jobId, {
-    status: isMock ? "RUNNING" : "QUEUED",
+    status: isMock ? "SUCCEEDED" : "QUEUED",
     errorCode: null,
     resultImagePath: null,
     pendingResultUrl: null,
     externalPredictionId: externalId ?? null,
     reportedModelVersion: reportedModelVersion ?? null,
-    completedAt: null,
+    completedAt: isMock ? new Date() : null,
   });
-
-  if (isMock) {
-    setTimeout(() => {
-      void updateAiJob(client, SALON_ID, jobId, {
-        status: "SUCCEEDED",
-        completedAt: new Date(),
-      });
-    }, 1200);
-  }
 
   return { jobId: updated.id, status: updated.status };
 }

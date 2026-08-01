@@ -34,7 +34,7 @@ describe("getHairTryOnProvider fail-closed", () => {
     }
   });
 
-  it("rejects mock provider on remote runtime even when explicitly set", () => {
+  it("rejects mock on remote without AI_ALLOW_MOCK", () => {
     process.env = {
       NODE_ENV: "production",
       DATA_STORE: "supabase",
@@ -48,6 +48,19 @@ describe("getHairTryOnProvider fail-closed", () => {
     } catch (error) {
       expect((error as AppError).code).toBe("AI_NOT_CONFIGURED");
     }
+  });
+
+  it("allows mock on remote when AI_ALLOW_MOCK=true for free demo", () => {
+    process.env = {
+      NODE_ENV: "production",
+      DATA_STORE: "supabase",
+      AI_PROVIDER: "mock",
+      AI_ALLOW_MOCK: "true",
+      NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: "service-role",
+    };
+    expect(isMockAiProvider()).toBe(true);
+    expect(getHairTryOnProvider().name).toBe("mock");
   });
 
   it("returns replicate provider when token is configured", () => {

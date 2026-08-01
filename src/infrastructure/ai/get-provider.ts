@@ -15,11 +15,19 @@ function resolveAiProvider(): string {
   return "mock";
 }
 
+function allowMockOnRemote(
+  env: NodeJS.ProcessEnv = process.env,
+): boolean {
+  return env.AI_ALLOW_MOCK === "true";
+}
+
 export function getHairTryOnProvider(): HairTryOnProvider {
   const provider = resolveAiProvider();
 
   if (provider === "mock") {
-    if (isRemoteRuntime()) {
+    // Free demo: explicit AI_ALLOW_MOCK=true permits mock on Netlify/Supabase.
+    // UI must show the "Demostración" badge (isMock).
+    if (isRemoteRuntime() && !allowMockOnRemote()) {
       throw new AppError(
         "AI_NOT_CONFIGURED",
         "El servicio de IA no está disponible.",
