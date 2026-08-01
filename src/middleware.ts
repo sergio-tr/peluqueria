@@ -9,6 +9,7 @@ import {
 const DEMO_PUBLIC_PREFIXES = [
   "/acceso",
   "/api/demo-access",
+  "/api/health",
   "/api/webhooks/replicate",
   "/api/cron/expire",
 ];
