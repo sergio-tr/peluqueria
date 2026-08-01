@@ -1,4 +1,4 @@
-# Change record — Phase 1D operational persistence
+# Change record â€” Phase 1D operational persistence
 
 **Date:** 2026-07-31  
 **Branch:** `feature/operational-persistence`  
@@ -33,7 +33,7 @@ Persist operational entities (`ai_jobs`, `booking_requests`, `booking_events`, `
 
 ## Architecture impact
 
-Operational writes flow: API → use-case → repository → Supabase service client. App-level overlap checks until GiST constraint is fully exercised in 2B.
+Operational writes flow: API â†’ use-case â†’ repository â†’ Supabase service client. App-level overlap checks until GiST constraint is fully exercised in 2B.
 
 ## API impact
 
@@ -81,8 +81,21 @@ Requires `DATA_STORE=supabase` and service role key. Roll back via revert PR.
 
 ## Stack dependency
 
-Depends on PR #4 (`security/secure-photo-storage`). Merge order: #1 → #2 → #3 → #4 → this.
+Depends on PR #4 (`security/secure-photo-storage`). Merge order: #1 â†’ #2 â†’ #3 â†’ #4 â†’ this.
 
 ## Blockers
 
-- Live Supabase not verified in this run — Draft PR if credentials unavailable.
+- Live Supabase not verified in this run â€” Draft PR if credentials unavailable.
+## Documentation updated
+
+- This change record
+- `docs/agent-runs/2026-07-31-phase-1d.md`
+
+## Remaining risks
+
+- Live Supabase not verified in CI for operational writes
+
+## Verification status
+
+- Unit tests for mappers and booking create
+- Live Supabase verification: PENDING (Draft PR)
