@@ -53,10 +53,13 @@ Committed in `netlify.toml`:
 
 - Build: `npm run build`
 - Plugin: `@netlify/plugin-nextjs` (Next.js App Router adapter)
-- Node: 20
+- Node: **22** (`NODE_VERSION` in `netlify.toml`; required by `@supabase/*` ≥2.111)
+- Config: `next.config.mjs` (plain JS — avoids needing TypeScript during Netlify install)
 - Scheduled function: `netlify/functions/expire-bookings.mts` (`@hourly`)
 
-Netlify installs the Next.js plugin from `netlify.toml`; no manual publish directory.
+Netlify installs the Next.js plugin from `netlify.toml`; **leave Publish directory empty** in the UI (do not set `.next`).
+
+**Do not set `NODE_ENV` in Netlify environment variables.** Next sets it during `next build`. If `NODE_ENV=production` is present at install time, npm omits/skips build tooling and the build fails with `Cannot find module 'typescript'`.
 
 ### Preview environment variables
 
